@@ -1,0 +1,12 @@
+
+=== APSPC1.zip ===
+testzip result: PASS (no errors)
+Total entries: 941
+
+=== APSPC2.zip ===
+testzip result: PASS (no errors)
+Total entries: 946
+
+=== APSPC-Annotations.zip ===
+testzip result: PASS (no errors)
+Total entries: 1887

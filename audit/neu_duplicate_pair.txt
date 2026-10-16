@@ -1,0 +1,18 @@
+V1: images/val count=360, val359.txt entries=359
+V1: excluded (in val dir, not in val359.txt): ['patches_105.jpg']
+
+V2: excluded file: /home/DSJ44/sr_project/yolo_dataset_original/images/val/patches_105.jpg
+V2: pixel_sha256: cfba9246320418e299e378a6d65a2da0803e2762ec285191f735bd844837275b
+V2: matched train files (same pixel_sha256): ['/home/DSJ44/sr_project/yolo_dataset_original/images/train/patches_101.jpg']
+
+V3: YOLO label contents
+  labels/val/patches_105.txt exists=True
+  --- labels/val/patches_105.txt content ---
+2 0.2625 0.2325 0.23500000000000001 0.455
+2 0.725 0.135 0.29 0.26
+2 0.7575000000000001 0.6950000000000001 0.215 0.61
+  labels/train/patches_101.txt exists=True
+  --- labels/train/patches_101.txt content ---
+2 0.2625 0.2325 0.255 0.455
+2 0.72 0.15 0.31 0.29
+2 0.7625000000000001 0.6975 0.23500000000000001 0.605

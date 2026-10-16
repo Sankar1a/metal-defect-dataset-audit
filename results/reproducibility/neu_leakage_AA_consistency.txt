@@ -1,0 +1,61 @@
+===== Line AA1: root-dir content comparison =====
+AA1 A: train=1440 val=360 | B: train=1440 val=360
+AA1 A labels: train=1440 val=360 | B labels: train=1440 val=360
+AA1 train 像素集合相同? yes  (差异数: A独有=0, B独有=0)
+AA1 val 像素集合相同? yes  (差异数: A独有=0, B独有=0)
+AA1 B 是否为 A 的符号链接或同一 inode? yes
+
+===== Line AA2: build controlled yamls =====
+===== neu_val359_controlled.yaml =====
+# NEU-DET val359 — leakage sensitivity audit
+# Same as configs/neu_det.yaml, but val excludes patches_105 (duplicate of train patches_101)
+
+path: /home/DSJ44/sr_project/yolo_dataset_original
+
+train: images/train
+
+val: /home/DSJ44/paper2_yolov11_steel/audits/leakage_sensitivity/val359.txt
+
+nc: 6
+
+names:
+  0: crazing
+  1: inclusion
+  2: patches
+  3: pitted_surface
+  4: rolled-in_scale
+  5: scratches
+
+===== neu_val360_controlled.yaml =====
+# NEU-DET val359 — leakage sensitivity audit
+# Same as configs/neu_det.yaml, but val excludes patches_105 (duplicate of train patches_101)
+
+path: /home/DSJ44/sr_project/yolo_dataset_original
+
+train: images/train
+
+val: /home/DSJ44/paper2_yolov11_steel/exp_leakage_20260817/configs/val360.txt
+
+nc: 6
+
+names:
+  0: crazing
+  1: inclusion
+  2: patches
+  3: pitted_surface
+  4: rolled-in_scale
+  5: scratches
+
+AA2 val359.txt 条目数=359
+AA2 val360.txt 条目数=360  (应为 360)
+AA2 新增条目: /home/DSJ44/paper2_yolov11_steel/datasets/NEU-DET/images/val/patches_105.jpg
+AA2 diff 差异行数=1
+AA2 diff 行8: [359]'val: /home/DSJ44/paper2_yolov11_steel/audits/leakage_sensitivity/val359.txt' -> [360]'val: /home/DSJ44/paper2_yolov11_steel/exp_leakage_20260817/configs/val360.txt'
+
+===== Line AA3: pass conditions =====
+AA3 val360 条目数 = val359 条目数 + 1: 通过
+AA3 两份 yaml 除 val 行外无差异: 通过
+AA3 train/val 指向的所有路径均存在: 通过
+AA3 GPU 空闲(0 MiB 占用,无其他进程): yes
+AA3 结论: 通过
+AA3 继续进入线 AB。

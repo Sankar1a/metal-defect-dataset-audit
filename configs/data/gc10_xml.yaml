@@ -1,0 +1,17 @@
+# GC10-DET condition XML (control) — exp_gc10_label_20260914
+path: /home/DSJ44/paper2_yolov11_steel/exp_gc10_label_20260914/data/gc10_xml
+train: images/train
+val: images/val
+test: ''
+nc: 10
+names:
+  0: chongkong
+  1: hanfeng
+  2: yueyawan
+  3: shuiban
+  4: youban
+  5: siban
+  6: yiwu
+  7: yahen
+  8: zhehen
+  9: yaozhe

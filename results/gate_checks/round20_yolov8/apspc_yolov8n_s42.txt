@@ -1,0 +1,11 @@
+GATE PASS
+run_args=/home/DSJ44/paper2_yolov11_steel/round20_yolov8_20261008/apspc_yolov8n_s42/args.yaml
+template=/home/DSJ44/paper2_yolov11_steel/runs_unified_20260803/apspc_yolo11n_s42/args.yaml
+允许差异字段(model/project/name/save_dir)-> 4 个:
+    ALLOWED model     模板='/home/DSJ44/paper2_yolov11_steel/yolo11n.pt' 本次='/home/DSJ44/paper2_yolov11_steel/round20_yolov8_20261008/yolov8n.pt'
+    ALLOWED name      模板='apspc_yolo11n_s42' 本次='apspc_yolov8n_s42'
+    ALLOWED project   模板='/home/DSJ44/paper2_yolov11_steel/runs_unified_20260803' 本次='/home/DSJ44/paper2_yolov11_steel/round20_yolov8_20261008'
+    ALLOWED save_dir  模板='/home/DSJ44/paper2_yolov11_steel/runs_unified_20260803/apspc_yolo11n_s42' 本次='/home/DSJ44/paper2_yolov11_steel/round20_yolov8_20261008/apspc_yolov8n_s42'
+数值等价例外(不判 FAIL)-> 无
+第五个字段差异(违规)-> 0 个
+GATE 结果: PASS

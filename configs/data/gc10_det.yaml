@@ -1,0 +1,23 @@
+# GC10-DET dataset config for Paper 2 feasibility experiment
+
+path: /home/DSJ44/sr_project/gc10_yolo
+
+train: images/train
+
+val: images/val
+
+
+
+nc: 10
+
+names:
+  0: chongkong
+  1: hanfeng
+  2: yueyawan
+  3: shuiban
+  4: youban
+  5: siban
+  6: yiwu
+  7: yahen
+  8: zhehen
+  9: yaozhe

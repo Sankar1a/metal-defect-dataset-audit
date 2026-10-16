@@ -1,0 +1,13 @@
+stem,folder_a,folder_b,class_a,class_b,xml_object_names,xml_names_cover_both_folders
+img_01_425503100_00018,3,7,crescent_gap,inclusion,7_yiwu;3_yueyawan;8_yahen,yes
+img_02_425392000_00984,8,7,rolled_pit,inclusion,7_yiwu;4_shuiban,no
+img_03_425506300_00018,1,2,punching_hole,welding_line,1_chongkong;2_hanfeng,yes
+img_03_436068500_00002,8,7,rolled_pit,inclusion,7_yiwu;8_yahen,yes
+img_04_425503600_00017,2,3,welding_line,crescent_gap,2_hanfeng;3_yueyawan,yes
+img_06_3436814000_00687,9,10,crease,waist folding,10_yaozhe,no
+img_06_425502900_00052,1,2,punching_hole,welding_line,1_chongkong;2_hanfeng,yes
+img_06_425505500_00052,8,2,rolled_pit,welding_line,2_hanfeng,no
+img_07_425391800_00054,6,1,silk_spot,punching_hole,1_chongkong;2_hanfeng,no
+img_07_425502900_00052,1,2,punching_hole,welding_line,1_chongkong;2_hanfeng,yes
+img_07_425503000_00061,4,7,water_spot,inclusion,4_shuiban,no
+img_07_436163600_01161,2,10,welding_line,waist folding,2_hanfeng;1_chongkong,no

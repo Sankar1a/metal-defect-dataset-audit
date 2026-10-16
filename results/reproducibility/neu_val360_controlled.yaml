@@ -1,0 +1,18 @@
+# NEU-DET val359 — leakage sensitivity audit
+# Same as configs/neu_det.yaml, but val excludes patches_105 (duplicate of train patches_101)
+
+path: /home/DSJ44/sr_project/yolo_dataset_original
+
+train: images/train
+
+val: /home/DSJ44/paper2_yolov11_steel/exp_leakage_20260817/configs/val360.txt
+
+nc: 6
+
+names:
+  0: crazing
+  1: inclusion
+  2: patches
+  3: pitted_surface
+  4: rolled-in_scale
+  5: scratches

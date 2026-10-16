@@ -1,0 +1,157 @@
+TARGET FILES (excluded from gc10_yolo, but annotated in raw lable/)
+==================================================
+FILE: /home/DSJ44/sr_project/gc10_raw/4/img_02_4406772100_00175.jpg
+  exists_in_gc10_yolo: False
+  xml exists: yes  (/home/DSJ44/sr_project/gc10_raw/lable/img_02_4406772100_00175.xml)
+  xml full content:
+    <annotation>
+    	<folder>4</folder>
+    	<filename>img_02_4406772100_00175.jpg</filename>
+    	<path>E:\002_Data\suface dectect\2-fuxinzhe\msos1\4\img_02_4406772100_00175.jpg</path>
+    	<source>
+    		<database>Unknown</database>
+    	</source>
+    	<size>
+    		<width>2048</width>
+    		<height>1000</height>
+    		<depth>1</depth>
+    	</size>
+    	<segmented>0</segmented>
+    </annotation>
+  <object> count: 0
+  <size> width=2048 height=1000 depth=1
+  <name> values: (none)
+  names in standard label set (10 classes): []
+  names in standard set check: no object names present
+  file_size_bytes: 421135
+  PIL decode: ok  resolution=2048x1000 mode=L
+==================================================
+FILE: /home/DSJ44/sr_project/gc10_raw/7/img_06_3402617700_00988.jpg
+  exists_in_gc10_yolo: False
+  xml exists: yes  (/home/DSJ44/sr_project/gc10_raw/lable/img_06_3402617700_00988.xml)
+  xml full content:
+    <annotation>
+    	<folder>7</folder>
+    	<filename>img_06_3402617700_00988.jpg</filename>
+    	<path>E:\002_Data\suface dectect\2-fuxinzhe\msos1\7\img_06_3402617700_00988.jpg</path>
+    	<source>
+    		<database>Unknown</database>
+    	</source>
+    	<size>
+    		<width>2048</width>
+    		<height>1000</height>
+    		<depth>1</depth>
+    	</size>
+    	<segmented>0</segmented>
+    </annotation>
+  <object> count: 0
+  <size> width=2048 height=1000 depth=1
+  <name> values: (none)
+  names in standard label set (10 classes): []
+  names in standard set check: no object names present
+  file_size_bytes: 344516
+  PIL decode: ok  resolution=2048x1000 mode=L
+
+CONTROL FILES (retained in gc10_yolo, with annotated xml)
+control chosen from gc10_yolo: /home/DSJ44/sr_project/gc10_yolo/images/train/img_01_3402617700_01009.jpg
+  raw copies: /home/DSJ44/sr_project/gc10_raw/3/img_01_3402617700_01009.jpg
+==================================================
+FILE: /home/DSJ44/sr_project/gc10_raw/3/img_01_3402617700_01009.jpg
+  exists_in_gc10_yolo: True
+  xml exists: yes  (/home/DSJ44/sr_project/gc10_raw/lable/img_01_3402617700_01009.xml)
+  xml full content:
+    <annotation>
+    	<folder>3</folder>
+    	<filename>img_01_3402617700_01009.jpg</filename>
+    	<path>E:\002_Data\suface dectect\2-fuxinzhe\msos1\3\img_01_3402617700_01009.jpg</path>
+    	<source>
+    		<database>Unknown</database>
+    	</source>
+    	<size>
+    		<width>2048</width>
+    		<height>1000</height>
+    		<depth>1</depth>
+    	</size>
+    	<segmented>0</segmented>
+    	<object>
+    		<name>3_yueyawan</name>
+    		<pose>Unspecified</pose>
+    		<truncated>0</truncated>
+    		<difficult>0</difficult>
+    		<bndbox>
+    			<xmin>1756</xmin>
+    			<ymin>298</ymin>
+    			<xmax>1967</xmax>
+    			<ymax>858</ymax>
+    		</bndbox>
+    	</object>
+    </annotation>
+  <object> count: 1
+  <size> width=2048 height=1000 depth=1
+  object[0]: name=3_yueyawan
+    bndbox: xmin=1756 ymin=298 xmax=1967 ymax=858
+    width=211 height=560 area=118160
+    FLAGS: none
+  <name> values: ['3_yueyawan']
+  names in standard label set (10 classes): ['3_yueyawan']
+  file_size_bytes: 233522
+  PIL decode: ok  resolution=2048x1000 mode=L
+control chosen from gc10_yolo: /home/DSJ44/sr_project/gc10_yolo/images/train/img_01_3436789500_00004.jpg
+  raw copies: /home/DSJ44/sr_project/gc10_raw/9/img_01_3436789500_00004.jpg
+==================================================
+FILE: /home/DSJ44/sr_project/gc10_raw/9/img_01_3436789500_00004.jpg
+  exists_in_gc10_yolo: True
+  xml exists: yes  (/home/DSJ44/sr_project/gc10_raw/lable/img_01_3436789500_00004.xml)
+  xml full content:
+    <annotation>
+    	<folder>9</folder>
+    	<filename>img_01_3436789500_00004.jpg</filename>
+    	<path>E:\002_Data\suface dectect\2-fuxinzhe\msos1\9\img_01_3436789500_00004.jpg</path>
+    	<source>
+    		<database>Unknown</database>
+    	</source>
+    	<size>
+    		<width>2048</width>
+    		<height>1000</height>
+    		<depth>1</depth>
+    	</size>
+    	<segmented>0</segmented>
+    	<object>
+    		<name>9_zhehen</name>
+    		<pose>Unspecified</pose>
+    		<truncated>0</truncated>
+    		<difficult>0</difficult>
+    		<bndbox>
+    			<xmin>981</xmin>
+    			<ymin>182</ymin>
+    			<xmax>2046</xmax>
+    			<ymax>249</ymax>
+    		</bndbox>
+    	</object>
+    	<object>
+    		<name>9_zhehen</name>
+    		<pose>Unspecified</pose>
+    		<truncated>0</truncated>
+    		<difficult>0</difficult>
+    		<bndbox>
+    			<xmin>478</xmin>
+    			<ymin>179</ymin>
+    			<xmax>711</xmax>
+    			<ymax>244</ymax>
+    		</bndbox>
+    	</object>
+    </annotation>
+  <object> count: 2
+  <size> width=2048 height=1000 depth=1
+  object[0]: name=9_zhehen
+    bndbox: xmin=981 ymin=182 xmax=2046 ymax=249
+    width=1065 height=67 area=71355
+    FLAGS: none
+  object[1]: name=9_zhehen
+    bndbox: xmin=478 ymin=179 xmax=711 ymax=244
+    width=233 height=65 area=15145
+    FLAGS: none
+  <name> values: ['9_zhehen', '9_zhehen']
+  names in standard label set (10 classes): ['9_zhehen', '9_zhehen']
+  file_size_bytes: 579559
+  PIL decode: ok  resolution=2048x1000 mode=L

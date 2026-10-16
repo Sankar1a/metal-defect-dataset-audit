@@ -1,0 +1,27 @@
+
+# NEU-DET dataset config for Paper 2 (YOLOv11 baseline)
+
+path: /home/DSJ44/paper2_yolov11_steel/datasets/NEU-DET
+
+train: images/train
+
+val: images/val
+
+
+
+nc: 6
+
+names:
+
+  0: crazing
+
+  1: inclusion
+
+  2: patches
+
+  3: pitted_surface
+
+  4: rolled-in_scale
+
+  5: scratches
+

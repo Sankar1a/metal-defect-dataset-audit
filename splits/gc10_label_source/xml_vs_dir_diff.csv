@@ -1,0 +1,4 @@
+seed,xml_run_name,xml_map50,xml_map5095,unified_map50,unified_map5095,xml_epochs_actual,unified_epochs_actual,unified_source
+0,gc10_yolo11n_xml_s0,0.671246,0.347952,67.12,34.80,200,200,verify3_20260805/metric_reconciliation.csv bestpt_val_* 列
+1,gc10_yolo11n_xml_s1,0.658860,0.344566,65.89,34.46,185,185,verify3_20260805/metric_reconciliation.csv bestpt_val_* 列
+42,gc10_yolo11n_xml_s42,0.670101,0.341925,67.01,34.19,200,200,verify3_20260805/metric_reconciliation.csv bestpt_val_* 列

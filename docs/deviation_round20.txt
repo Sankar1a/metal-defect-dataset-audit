@@ -1,0 +1,100 @@
+deviation_note.txt — 任务书 7(round20_yolov8_20261008)执行偏差记录
+首次生成: 2026-10-08 20:51
+
+======================================================================
+1. 第一次队列启动与中断(如实记录)
+======================================================================
+队列启动时间 : 2026-10-08 20:37:36
+  依据: logs/_chain.log 首行
+        "################ r20_chain start 2026-10-08 20:37:36 ################"
+        logs/_driver.log "job 1/18  neu_yolov8n_s0 (dataset=NEU-DET size=n seed=0)  start=2026-10-08 20:37:36"
+
+中断时间     : 2026-10-08 20:41:55
+  依据: logs/neu_yolov8n_s0.log 最后一次写入时间 = 2026-10-08 20:41:55
+        yolo11n.pt.a085d980c8494ba5afa6b5e59419e010.partial 最后一次写入时间 = 2026-10-08 20:41:55
+
+中断时状态   : 第 1 次训练 neu_yolov8n_s0 未进入任何 epoch。
+               日志停在混合精度自检 check_amp() 下载 yolo11n.pt 的进度条
+               (最后一行为 " 77%|███████▋  | 4.12M/5.35M [04:09<01:19, 16.2kB/s]")。
+               日志内 grep -i -E "traceback|error|killed|interrupt|Aborted|terminate" 无匹配行。
+               logs/_chain.log 无 end 行;chain_rc.txt 不存在;
+               gates/ 目录为空(未执行过 3a 参数闸门);
+               neu_yolov8n_s0/ 内只有 args.yaml 与空的 weights/,无 results.csv、无 best.pt。
+
+中断原因     : 队列随服务器 AI 会话中断一并终止。
+
+======================================================================
+2. 中断残留处理(只移动,不删除)
+======================================================================
+已于 2026-10-08 20:50 在本轮目录内新建 aborted_20261008_2041/,并移入:
+    aborted_20261008_2041/neu_yolov8n_s0/       <- 原 round20_yolov8_20261008/neu_yolov8n_s0/
+                                                   (含 args.yaml 1764 B、空 weights/)
+    aborted_20261008_2041/neu_yolov8n_s0.log    <- 原 round20_yolov8_20261008/logs/neu_yolov8n_s0.log
+                                                   (8239 B)
+
+原地保留、未删除:
+    round20_yolov8_20261008/yolo11n.pt.a085d980c8494ba5afa6b5e59419e010.partial
+        size   = 4325376 bytes
+        sha256 = 266b902f8f53e37289d200f3e1ebf2e0ef8b5aa32175b35242d3474421cd7304
+
+未删除任何文件。
+
+======================================================================
+3. 避免混合精度自检联网下载
+======================================================================
+已将本地 yolo11n.pt 复制(不是移动)一份到本轮目录,使 check_amp() 的
+YOLO("yolo11n.pt") 在本轮目录(训练进程 CWD)内直接命中本地文件,不再联网下载:
+
+    源    : /home/DSJ44/paper2_yolov11_steel/yolo11n.pt
+    目标  : /home/DSJ44/paper2_yolov11_steel/round20_yolov8_20261008/yolo11n.pt
+    命令  : cp -p /home/DSJ44/paper2_yolov11_steel/yolo11n.pt ./yolo11n.pt
+
+    复制后核对(2026-10-08 20:50):
+        源    size=5613764  sha256=0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1
+        目标  size=5613764  sha256=0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1
+        与 yolov8_weights.txt 第 [2] 节记录值一致(大小一致 / sha256 一致)。
+    源文件仍在原位,未被移动(项目根 yolo11n.pt mtime 仍为 2024-10-02)。
+
+======================================================================
+4. 重启(完全脱离当前会话)
+======================================================================
+重启时间 : 2026-10-08 20:50:36
+启动命令 :
+    cd /home/DSJ44/paper2_yolov11_steel/round20_yolov8_20261008
+    setsid nohup bash /home/DSJ44/paper2_yolov11_steel/round20_yolov8_20261008/scripts/start_queue.sh \
+        > /home/DSJ44/paper2_yolov11_steel/round20_yolov8_20261008/queue_restart.out 2>&1 < /dev/null &
+调度链   : scripts/start_queue.sh -> scripts/r20_chain.sh -> scripts/r20_run_all.py -> scripts/r20_train_one.py
+起始 run : 第 1 次 neu_yolov8n_s0(从第 1 次开始,未使用 resume)
+
+--- 会话号(SID)核对:当前 shell 与队列进程 SID 不同 ---
+
+[当前 shell / 工具调用会话]  ps -o pid,ppid,pgid,sid,cmd -p $$
+    PID    PPID   PGID   SID    CMD
+    511197 81972  511197 511197 bash -c <工具调用命令行,原文过长此处省略>
+
+[队列进程 / 新会话]  ps -eo pid,ppid,pgid,sid,cmd(SID=511200)
+    PID    PPID   PGID   SID    CMD
+    511203 1      511200 511200 bash /home/DSJ44/paper2_yolov11_steel/round20_yolov8_20261008/scripts/r20_chain.sh
+
+    当前 shell SID = 511197
+    队列进程 SID   = 511200
+    SID 不同: 是(511200 != 511197)。队列进程 PPID=1,已与当前会话完全脱离。
+
+同会话(SID=511200)内的其它队列进程(同时刻 ps -eo pid,ppid,pgid,sid,cmd):
+    PID    PPID   PGID   SID    CMD
+    511207 511203 511200 511200 .../python -u .../scripts/r20_run_all.py
+    511208 511207 511200 511200 .../python  .../scripts/r20_train_one.py neu_yolov8n_s0 --project ... --log ...
+    (另有 511208 派生的 dataloader worker 子进程若干,SID 同为 511200)
+
+--- queue_restart.out 原文 ---
+chain_pid=511203
+chain_log=/home/DSJ44/paper2_yolov11_steel/round20_yolov8_20261008/logs/_chain.log
+driver_log=/home/DSJ44/paper2_yolov11_steel/round20_yolov8_20261008/logs/_driver.log
+
+--- 重启前状态复核 ---
+    round20_yolov8_20261008/neu_yolov8n_s0/            已不存在(已移入 aborted_20261008_2041/)
+    round20_yolov8_20261008/logs/neu_yolov8n_s0.log    已不存在(已移入 aborted_20261008_2041/)
+    round20_yolov8_20261008/yolo11n.pt                 已就位(5613764 B, sha256 0ebbc80d... 校验一致)
+    round20_yolov8_20261008/yolo11n.pt.a085d980...partial  原地保留(4325376 B)
+    round20_yolov8_20261008/yolov8n.pt                 6549796 B  sha256 f59b3d83...
+    round20_yolov8_20261008/yolov8s.pt                 22588772 B sha256 1f47a78b...

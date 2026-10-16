@@ -1,0 +1,34 @@
+# diff /home/DSJ44/paper2_yolov11_steel/exp_gc10_label_20260914/runs/gc10_yolo11n_dir_s0/args.yaml /home/DSJ44/paper2_yolov11_steel/round22_rtdetr_20261010/gc10_rtdetr-l_dir_s0/args.yaml
+# exit_code=1
+3c3
+< model: /home/DSJ44/paper2_yolov11_steel/yolo11n.pt
+---
+> model: /home/DSJ44/paper2_yolov11_steel/round22_rtdetr_20261010/rtdetr-l.pt
+5c5
+< epochs: 200
+---
+> epochs: 100
+15,16c15,16
+< project: /home/DSJ44/paper2_yolov11_steel/exp_gc10_label_20260914/runs
+< name: gc10_yolo11n_dir_s0
+---
+> project: /home/DSJ44/paper2_yolov11_steel/round22_rtdetr_20261010
+> name: gc10_rtdetr-l_dir_s0
+19c19
+< optimizer: SGD
+---
+> optimizer: AdamW
+73c73
+< lr0: 0.01
+---
+> lr0: 0.0001
+75,76c75,76
+< momentum: 0.937
+< weight_decay: 0.0005
+---
+> momentum: 0.9
+> weight_decay: 0.0001
+106c106
+< save_dir: /home/DSJ44/paper2_yolov11_steel/exp_gc10_label_20260914/runs/gc10_yolo11n_dir_s0
+---
+> save_dir: /home/DSJ44/paper2_yolov11_steel/round22_rtdetr_20261010/gc10_rtdetr-l_dir_s0

@@ -1,0 +1,125 @@
+deviation_note.txt — 第二十一轮(round21_v8data_20261009)偏离/口径说明
+生成时间: 2026-10-09 09:55
+本文件按任务书"交付"小节要求编写:若有任何偏离本任务书的情况,写入本文件并打包。
+
+======================================================================
+1. 第5.1步 `dose_results_v8.csv` 中 best_pt_sha256 列的位置
+======================================================================
+任务书原文: "结果逐行写入 dose_results_v8.csv 并 flush,列名与
+dose_results_unified.csv 相同,另加一列 best_pt_sha256。"
+
+实际做法: dose_results_unified.csv 原有的 9 列
+    seed, run_name, val_set, dose_groups, dose_images, val_total_images,
+    label_variant, map50, map5095
+列名与顺序**完全保持不变**,best_pt_sha256 作为**第 10 列追加在末尾**。
+任务书未指定该新增列的位置,此处取"原有列不变 + 末尾追加"的读法。
+
+======================================================================
+2. 第5步评估结果的输出位置
+======================================================================
+任务书未指定第5步 model.val(...) 的 project/name。本轮取:
+    project = round21_v8data_20261009/runs_eval
+    name    = "<run_name>__on_<val_set 或 xml/dir>"
+与原实验 eval_dose.py 的 EVALDIR = <EXP>/runs_eval 命名一致。
+
+======================================================================
+3. A 组(APSPC 剂量实验 A 臂)3 个 run 的判定依据
+======================================================================
+任务书原文: "A 臂(训练集 1280 张、训练期用干净 val_d0 选权重)的 3 个 run"。
+exp_apspc_dose_unified_20260915/runs/ 下共两臂 6 个 run:
+
+    臂名(arm)         训练集 data yaml                              训练集图片数
+    A_leaktrain       exp_apspc_dose_20260817/configs/apspc_d0.yaml   1280
+                      (train: train_leak/images, val: val_d0/images 342 张)
+    B_clean_repro     configs/apspc/apspc_clean1711_seed0_dev.yaml    1198
+                      (train: images/train, val: images/val 342 张)
+
+只有 A_leaktrain 臂训练集为 1280 张,且其训练期 val 为 val_d0
+(dose=0,即未掺入泄漏组的干净验证集),与"训练集 1280 张、训练期用干净
+val_d0 选权重"逐项吻合,B 臂为 1198 张。故 A 组取:
+    apspc_yolo11n_leaktrain_unified_s0 / s1 / s42
+判定唯一,未出现需要停止并列出候选的情况。
+依据文件: runs_meta.csv、exp_apspc_dose_unified_20260915/scripts/common.py、
+          preflight.txt。
+
+======================================================================
+4. B 组(GC10 标签来源实验)6 个 run 的判定依据
+======================================================================
+exp_gc10_label_20260914/runs/ 下恰有 6 个目录,无歧义:
+    gc10_yolo11n_xml_s0 / s1 / s42   (条件 XML,data=configs/gc10_xml.yaml)
+    gc10_yolo11n_dir_s0 / s1 / s42   (条件 DIR,data=configs/gc10_dir.yaml)
+
+======================================================================
+5. 模板 run 名 -> 本轮 run 名(第3步改名规则)
+======================================================================
+9 个模板 run 名**全部**含 "yolo11n",故一律走"把 yolo11n 改为 yolov8n"分支;
+未使用任务书中"若模板名中不含模型名,则在前面加 v8n_"的分支。
+新旧名称对照见 name_mapping.txt。
+
+======================================================================
+6. 混合精度自检所用的 yolo11n.pt
+======================================================================
+任务书第1步要求将项目根 yolo11n.pt 复制到本轮目录,使训练进程 CWD 内可直接命中,
+避免联网下载。本轮已照做(见 weights.txt),第 1 次训练日志中
+AMP 自检通过且无任何下载进度条。此为任务书要求做法,非偏离。
+
+======================================================================
+7. 开发期修正与事后修正(7.1/7.3 为启动前完成;7.2 为队列结束后发现并修正)
+======================================================================
+7.1 scripts/r21_train_one.py 在首次空跑时报 KeyError('A_arm'),
+    原因为 TEMPLATE_ROOT 字典键名与 condition 取值不一致。
+    修正内容: TEMPLATE_ROOT 的键由 {"A","XML","DIR"} 改为 {"A_arm","XML","DIR"},
+    template_path() 继续按 condition 取键。
+    该修正发生在正式队列启动之前(空跑阶段),空跑最终结果 9/9 PASS。
+
+7.2 scripts/r21_chain.sh 第6步影响面记录的排除模式有误(队列结束后发现并修正)。
+    原实现(队列实际运行的版本):
+        D=$ROOT/round21_v8data_20261009          # 绝对路径
+        find . -newermt "$START" -type f -not -path "./$D/*" -not -path './.git/*'
+    任务书第6步的 $D 是**相对**目录名(round21_v8data_20261009),
+    故正确模式应为 "./<basename>/*"。使用绝对路径时该模式永不匹配,
+    本轮目录自身的全部文件被算进影响面,交付物失去"本轮未改动既有文件"的证明力。
+    实测:
+        修正前 impact_project.txt            = 886 行,其中本轮目录自身 886 行(占 100%)
+        修正前 impact_project_followlinks.txt = 887 行,其中本轮目录自身 887 行
+    修正内容:
+        DB=$(basename "$D")
+        find . -newermt "$START" -type f -not -path "./$DB/*" -not -path './.git/*' > "$D/impact_project.txt"
+        find -L . -newermt "$START" -type f -not -path "./$DB/*" -not -path './.git/*' > "$D/impact_project_followlinks.txt"
+    修正后(START 与 END.txt 均未改动,仍为 2026-10-09 09:47:04 / 15:30:57):
+        impact_project.txt             = 1 行  ->  ./round21_v8data.tar.gz
+        impact_project_followlinks.txt = 1 行  ->  ./round21_v8data.tar.gz
+        impact_settings_diff.txt       = 0 字节(settings.json 无差异)
+        impact_ultralytics.txt         = 5 行(persistent_cache.json / settings.json 被触碰)
+    即本轮除新建 round21_v8data_20261009/ 目录与 round21_v8data.tar.gz 外,
+    未新建或修改项目内任何其它文件。
+    数据集 cache 核查: exp_apspc_dose_20260817 与 exp_gc10_label_20260914 下的
+    labels.cache / train.cache / val.cache 的 mtime 分别为 2026-08-16 与 2026-09-14,
+    均早于 START;find -newermt START 命中数 = 0,即本轮复用了既有 cache 未重写,
+    这解释了 followlinks 版与普通版结果一致(无额外文件)。
+    处理: 4 个 impact_*.txt 已按修正后的命令重生成;
+          launch_method_source.txt 已重生成,其 J 段为修正后的 r21_chain.sh 原文,
+          并在文件头注明"与队列实际运行时略有差异";
+          随后重新打包 round21_v8data.tar.gz。
+
+7.3 scripts/r21_package.sh 的"每个 run 的 args.yaml 与 results.csv"清单有误。
+    原实现:
+        r=$(basename "$(dirname "$line")")      # line 取自 templates.txt
+    而 templates.txt 记录的是**模板**路径(位于 exp_apspc_dose_unified_20260915/
+    与 exp_gc10_label_20260914/ 下),其目录名是模板 run 名(含 yolo11n),
+    与本轮目录内的 run 名(含 yolov8n)不同,导致 [ -f "$r/args.yaml" ] 恒为假,
+    9 个 run 的 args.yaml / results.csv 会被静默漏掉(实测 0/9 命中)。
+    修正内容: 增加名称映射,与 name_mapping.txt 规则一致
+        t=$(basename "$(dirname "$line")")
+        r=$(echo "$t" | sed 's/yolo11n/yolov8n/')
+    沙箱复核: 修复前 tar 内 run 的 args.yaml=0 / results.csv=0;
+              修复后 =9 / =9,且 logs/、*.pt、*.png、runs_eval/、weights/ 等
+              不打包内容仍为 0 条。修复时队列尚未执行到打包步骤。
+
+======================================================================
+8. 未修改、未删除任何既有文件
+======================================================================
+本轮全部写入均发生在新建目录 round21_v8data_20261009/ 内;
+从 round20_yolov8_20261008/yolov8n.pt 与项目根 yolo11n.pt 均为**复制**(源文件保留)。
+最终以 impact_project.txt / impact_project_followlinks.txt / impact_ultralytics.txt
+/ impact_settings_diff.txt 为准。

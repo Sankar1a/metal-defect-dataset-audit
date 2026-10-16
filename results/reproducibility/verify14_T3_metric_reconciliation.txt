@@ -1,0 +1,59 @@
+=== T3: verify3_20260805/metric_reconciliation.csv (权威来源文件) ===
+
+### ls -la verify3_20260805/
+总用量 1176
+drwxr-xr-x  4 DSJ44 user    4096 8月   6 08:55 .
+drwxr-xr-x 34 DSJ44 user    4096 9月  14 15:59 ..
+-rw-r--r--  1 DSJ44 user    2183 8月   6 08:55 line_L_terminal.txt
+-rw-r--r--  1 DSJ44 user    4471 8月   6 08:55 line_M_terminal.txt
+-rw-r--r--  1 DSJ44 user    1952 8月   5 21:02 metric_reconciliation.csv
+drwxr-xr-x  2 DSJ44 user    4096 8月   5 21:03 prior_audit_snapshot
+-rw-r--r--  1 DSJ44 user 1103622 8月   5 20:38 raw_all_hashes.csv
+-rw-r--r--  1 DSJ44 user    1002 8月   5 20:35 raw_annotation_inventory.csv
+drwxr-xr-x  2 DSJ44 user    4096 8月   5 20:38 raw_conflict_pairs
+-rw-r--r--  1 DSJ44 user   30084 8月   5 20:38 raw_dup_groups.csv
+-rw-r--r--  1 DSJ44 user     677 8月   5 21:03 verify3_env.txt
+-rw-r--r--  1 DSJ44 user    9284 8月   5 20:35 verify3_l.py
+-rw-r--r--  1 DSJ44 user    4407 8月   5 20:39 verify3_m.py
+-rw-r--r--  1 DSJ44 user    1200 8月   5 21:02 verify3_n.py
+
+### cat verify3_20260805/metric_reconciliation.csv
+run_name,seed,epochs_total,last_map50,last_map5095,best_row_epoch,best_row_map50,best_row_map5095,bestpt_val_map50,bestpt_val_map5095,note
+apspc_yolo11n_s0,0,200,0.49095,0.29751,188.0,0.50738,0.30927,0.5157104459569031,0.3088829152387541,
+apspc_yolo11n_s1,1,200,0.50066,0.29335,182.0,0.53334,0.3115,0.5353544562730556,0.31182042977571056,
+apspc_yolo11n_s42,42,200,0.50641,0.29546,182.0,0.51036,0.29896,0.5100374999373357,0.2970350446985373,
+apspc_yolo11s_s0,0,200,0.52083,0.29405,188.0,0.53197,0.31551,0.5317822823300593,0.31536033059106666,
+apspc_yolo11s_s1,1,200,0.50577,0.29962,176.0,0.52983,0.31396,0.5282845464268388,0.31165971470676457,
+apspc_yolo11s_s42,42,156,0.50504,0.29068,106.0,0.54951,0.30638,0.5495764268154129,0.3052303035330068,
+gc10_yolo11n_s0,0,200,0.6531,0.33675,170.0,0.6698,0.3467,0.6712462999913364,0.34795234562502975,
+gc10_yolo11n_s1,1,185,0.65975,0.33438,135.0,0.6579,0.34344,0.6588598740169207,0.3445663220183933,
+gc10_yolo11n_s42,42,200,0.67712,0.34018,183.0,0.67228,0.34171,0.670101361353096,0.3419254543884766,
+gc10_yolo11s_s0,0,200,0.66475,0.34632,174.0,0.66637,0.35038,0.6662890220071672,0.3514852687587211,
+gc10_yolo11s_s1,1,200,0.64691,0.34562,150.0,0.65871,0.34662,0.65652333166099,0.34696256883907894,
+gc10_yolo11s_s42,42,200,0.65322,0.33959,151.0,0.6777,0.34888,0.6798532822589527,0.34763379558129237,
+neu_yolo11n_s0,0,200,0.75423,0.42677,183.0,0.75344,0.43569,0.7687236285158243,0.43486166740883087,
+neu_yolo11n_s1,1,200,0.76763,0.43696,188.0,0.77416,0.44631,0.7745495125428733,0.44722733345221477,
+neu_yolo11n_s42,42,200,0.76014,0.43763,200.0,0.76014,0.43763,0.7606025668970372,0.4372833520608958,
+neu_yolo11s_s0,0,200,0.76048,0.43029,183.0,0.77936,0.44476,0.7791584905027071,0.4446940369854805,
+neu_yolo11s_s1,1,200,0.76887,0.43982,188.0,0.77101,0.44919,0.7709819044329227,0.4488554049124644,
+neu_yolo11s_s42,42,200,0.74955,0.42275,180.0,0.75233,0.43589,0.7642553811216409,0.43444872099233717,
+
+### wc -l verify3_20260805/metric_reconciliation.csv
+19 verify3_20260805/metric_reconciliation.csv
+
+### cat verify3_20260805/verify3_env.txt
+line_l_python=3.10.20
+line_l_torch=2.3.1+cu121
+line_l_ultralytics=8.3.40
+line_m_python=3.10.20
+line_m_torch=2.3.1+cu121
+line_m_ultralytics=8.3.40
+script_sha256_verify3_l=ec155a0f9c6b9c3a559d3c878e1f65f8c904e75ea9b4b14aa9fab3768eaa72d4
+script_sha256_verify3_m=012fb897f6ae46ea520df5bca6d7561c3d98fc5d6eba10a8185eed5bc3a69f36
+script_sha256_verify3_n=958aadb0c77b228cdc90c1b8bdde0e75a73f0ff57a841e45730988ac5860bd97
+timestamp=2026-08-05T21:03:20.084814
+gpu_model=NVIDIA GeForce RTX 4080
+conda_env=yolov11
+dataset_root_APSPC_RAW=/home/DSJ44/paper2_yolov11_steel/APSPC
+dataset_root_GC10_RAW=/home/DSJ44/sr_project/gc10_raw
+dataset_root_NEU_RAW=/home/DSJ44/sr_project/raw_neu_images

@@ -1,0 +1,7 @@
+seed,run_name,val_set,map50,map5095,epochs_actual,best_epoch
+0,apspc_yolo11n_clean_repro_s0,clean_val,0.515710,0.308883,200,179
+0,apspc_yolo11n_clean_repro_s0,val_d0,0.515710,0.308883,200,179
+1,apspc_yolo11n_clean_repro_s1,clean_val,0.535354,0.311820,200,179
+1,apspc_yolo11n_clean_repro_s1,val_d0,0.535354,0.311820,200,179
+42,apspc_yolo11n_clean_repro_s42,clean_val,0.510037,0.297035,200,143
+42,apspc_yolo11n_clean_repro_s42,val_d0,0.510037,0.297035,200,143

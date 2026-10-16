@@ -1,0 +1,15 @@
+path: /home/DSJ44/paper2_yolov11_steel/datasets/apspc_clean1711_seed0
+train: images/train
+val: images/val
+nc: 10
+names:
+  0: aoxian
+  1: budaodian
+  2: cahua
+  3: jupi
+  4: loudi
+  5: pengshang
+  6: qikeng
+  7: tucengkailie
+  8: tufen
+  9: zangdian

@@ -1,0 +1,109 @@
+第十二轮 GC10 标注歧义影响量化 — 本轮所跑命令完整列表 (exp_gc10_label_20260914)
+
+【全局修正】按补充说明 §0.1,目录名 exp_gc10_label_20260818 → exp_gc10_label_20260914。
+
+--- 前置检查 + START 记录 ---
+cd /home/DSJ44/paper2_yolov11_steel
+mkdir -p exp_gc10_label_20260914/{scripts,configs,runs,data}
+date '+%Y-%m-%d %H:%M:%S' > exp_gc10_label_20260914/.start_ts      # => 2026-09-14 17:21:34
+/home/DSJ44/miniconda3/envs/yolov11/bin/python -c "import sys,torch,ultralytics;print(...)"
+nvidia-smi
+cat /home/DSJ44/.config/Ultralytics/settings.json
+ls /home/DSJ44/sr_project/gc10_yolo/images/train | wc -l           # => 1833
+ls /home/DSJ44/sr_project/gc10_yolo/images/val   | wc -l           # => 459
+nvidia-smi --query-gpu=memory.used --format=csv                    # => 0 MiB
+cat runs_unified_20260803/gc10_yolo11n_s0/args.yaml                # diff 模板,确认可读 (106 行)
+ls -la /home/DSJ44/sr_project/gc10_raw/                            # 结构确认
+for i in 1..10: ls /home/DSJ44/sr_project/gc10_raw/$i | wc -l      # 219/273/226/289/204/651/216/31/53/150 = 2312
+ls /home/DSJ44/sr_project/gc10_raw/lable/ | wc -l                  # => 2294
+head -20 <sample xml>
+find /home/DSJ44/sr_project/gc10_yolo -name '*.cache' -o -name '*.npy'   # => labels/train.cache, labels/val.cache
+
+--- 线 EA ---
+/home/DSJ44/miniconda3/envs/yolov11/bin/python \
+    exp_gc10_label_20260914/scripts/ea_check.py > exp_gc10_label_20260914/_ea_raw.txt 2>&1
+  EA1 遍历 gc10_raw/1..10 全部 jpg;folder_id=子目录号;按 stem 查 lable/*.xml;
+      解析 <object><name> 前缀数字得 xml_class_ids;判定 folder_in_xml
+  EA1 jpg=2312, xml_exists=2306, xml_missing=6, n_objects==0 的张数=2
+  EA1 folder_in_xml_yes=2225, folder_in_xml_no=81
+  EA1-ADD yes + no = 2306 ; 口径甲 2306 ; 口径乙 2294
+  EA2 pixel_sha256(PIL 解码→RGB→tobytes→SHA256) 在 gc10_yolo train/val 定位
+  EA2 不一致图像总数=81; 定位成功=79 (train=64, val=15), 未找到=2
+  EA3 configs/gc10/gc10_det.yaml names/nc 打印 + yaml_index→yaml_name→folder_id 对应表 (10/10 OK, 一一对应=YES)
+  EA4 EA1 完成 / EA2>0 / EA3 明确 / GPU 空闲 → 全部满足
+  产出: EA_preflight.txt, EA_mismatch_list.csv (81 行), EA2_located.csv (79 行)
+
+--- 线 EB ---
+/home/DSJ44/miniconda3/envs/yolov11/bin/python \
+    exp_gc10_label_20260914/scripts/eb_build.py > exp_gc10_label_20260914/_eb_raw.txt 2>&1
+    (首次运行因 labels 路径拼写 <split>/labels vs labels/<split> 报 FileNotFoundError,
+     未产生半成品数据即失败;rm -rf data/ 后修正路径重跑成功)
+  EB1 复制 gc10_yolo → data/gc10_xml (train=1833 val=459 labels_train=1833 labels_val=459)
+  EB1 NOTE 不复制 labels/*.cache,保证副本自洽且不回写源目录
+  EB2 复制 gc10_xml → data/gc10_dir;对 EA2 定位成功的 79 张追加 "<yaml_index> 0.5 0.5 1.0 1.0"
+  EB2 修改的 label 文件数=79 (train=64, val=15)
+  EB2 行数 3563 → 3642 (train 2816→2880, val 747→762)
+  EB3 configs/gc10_xml.yaml, configs/gc10_dir.yaml + diff
+  核验: gc10_dir 相对 gc10_xml 改动 label = 64+15 = 79, 改动 image = 0, 副本内 .cache = 0
+  产出: EB_build.txt
+
+--- 线 EC 前置冒烟测试 ---
+/home/DSJ44/miniconda3/envs/yolov11/bin/python \
+    exp_gc10_label_20260914/scripts/ec_train_one.py xml 0 --epochs 1 \
+    --project exp_gc10_label_20260914/scratch_smoke --log exp_gc10_label_20260914/scratch_smoke.log
+  => exit_status=OK, elapsed_sec=50.9, conf=0.001 未被拒绝
+  diff scratch args.yaml vs 模板: 仅 data/epochs/project/name/save_dir 不同
+  rm -rf exp_gc10_label_20260914/scratch_smoke
+  产出: EC_smoke_test.txt
+
+--- 线 EC 正式训练 (6 次,串行) ---
+nohup /home/DSJ44/miniconda3/envs/yolov11/bin/python \
+    exp_gc10_label_20260914/scripts/ec_run_all.py \
+    > exp_gc10_label_20260914/_ec_driver_stdout.log 2>&1 &
+    (首次启动因未创建 logs/ 目录,在打开日志文件时 FileNotFoundError 退出,未启动任何训练;
+     mkdir -p logs runs 并补 os.makedirs 后重启成功)
+  对 {xml,dir} × seeds {0,1,42} 各跑 200 epochs,调用参数见 ec_train_one.py:
+    imgsz=640 epochs=200 batch=16 patience=50 seed=<seed> resume=False exist_ok=False device=0
+    optimizer='SGD' degrees=10.0 flipud=0.5 mixup=0.1 conf=0.001 warmup_epochs=3 save_period=20
+    project=exp_gc10_label_20260914/runs  name=gc10_yolo11n_<cond>_s<seed>
+  每次训练后自动执行 §2 args.yaml 验收 diff (允许差异键: data/project/name/seed/save_dir;
+  warmup_epochs 3.0 与 3 视为数值等价),出现违规差异立即停止
+  产出: line_EC_terminal.txt, args_diff.txt, optimizer_resolved.txt, logs/*.log
+
+--- 线 ED ---
+/home/DSJ44/miniconda3/envs/yolov11/bin/python \
+    exp_gc10_label_20260914/scripts/ed_eval.py > exp_gc10_label_20260914/_ed_raw.txt 2>&1
+  ED1 每个 best.pt 在自身 val 评估 (r.box.map50 / r.box.map)
+  ED2 每个 best.pt 在另一条件 val 评估
+  ED3 r.box.ap50 + r.box.ap_class_index → 分类别 AP50
+  ED4 gc10_label_results.csv (13 列,三种口径并存) / per_class_ap.csv / xml_vs_unified.csv
+  ED5 终端打印 6 行全字段 + per_class_ap.csv 全部内容
+  产出: gc10_label_results.csv, per_class_ap.csv, xml_vs_unified.csv, line_ED_terminal.txt
+
+--- 线 EE ---
+/home/DSJ44/miniconda3/envs/yolov11/bin/python \
+    exp_gc10_label_20260914/scripts/ee_env.py
+  §8 三条越界核验原始输出 + 版本 + 脚本/yaml SHA256 + 副本规模 + 结束时间戳
+  产出: exp_env.txt
+
+--- 交付确认 ---
+ls -la exp_gc10_label_20260914/
+
+--- 约束遵守 ---
+不修改 gc10_raw / gc10_yolo / runs_unified_20260803/ / verify* / exp_* 下任何既有文件;
+两个数据集副本均为全新副本 (data/gc10_xml, data/gc10_dir);
+训练期间未触碰 test 划分 (两份 yaml 的 test 键留空,评估仅用 split='val');
+不输出 markdown 报告/状态总结/进度说明,产出仅 CSV / TXT / 终端打印;
+不计算差值、不计算均值、不判断显著与否、不下结论。
+
+--- 线 EC 实际执行结果(补充记录) ---
+driver 启动 2026-09-14 17:27:48,全部 6 次结束 2026-09-14 22:05:17, total_elapsed_sec=16649.4 (4.62 h)
+job 1/6 gc10_yolo11n_xml_s0  start=17:27:48 end=18:17:29 exit_code=0 epochs=200 GATE=PASS 违规差异=0
+job 2/6 gc10_yolo11n_xml_s1  start=18:17:29 end=19:02:03 exit_code=0 epochs=185 GATE=PASS 违规差异=0 (早停)
+job 3/6 gc10_yolo11n_xml_s42 start=19:02:03 end=19:48:29 exit_code=0 epochs=200 GATE=PASS 违规差异=0
+job 4/6 gc10_yolo11n_dir_s0  start=19:48:29 end=20:34:34 exit_code=0 epochs=200 GATE=PASS 违规差异=0
+job 5/6 gc10_yolo11n_dir_s1  start=20:34:34 end=21:20:34 exit_code=0 epochs=200 GATE=PASS 违规差异=0
+job 6/6 gc10_yolo11n_dir_s42 start=21:20:34 end=22:05:17 exit_code=0 epochs=186 GATE=PASS 违规差异=0 (早停)
+六次 optimizer 实际解析行均为: optimizer: SGD(lr=0.01, momentum=0.937) with parameter groups
+  81 weight(decay=0.0), 88 weight(decay=0.0005), 87 bias(decay=0.0)
+save_period=20 生效确认: 6 个 run 的 weights/ 下均有 epoch0/20/40/.../180.pt

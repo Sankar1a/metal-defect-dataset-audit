@@ -1,0 +1,16 @@
+# diff /home/DSJ44/paper2_yolov11_steel/runs_unified_20260803/neu_yolo11s_s42/args.yaml /home/DSJ44/paper2_yolov11_steel/round17_yolo11m_20261005/neu_yolo11m_s42/args.yaml
+# exit_code=1
+3c3
+< model: /home/DSJ44/paper2_yolov11_steel/yolo11s.pt
+---
+> model: /home/DSJ44/paper2_yolov11_steel/yolo11m.pt
+15,16c15,16
+< project: /home/DSJ44/paper2_yolov11_steel/runs_unified_20260803
+< name: neu_yolo11s_s42
+---
+> project: /home/DSJ44/paper2_yolov11_steel/round17_yolo11m_20261005
+> name: neu_yolo11m_s42
+106c106
+< save_dir: /home/DSJ44/paper2_yolov11_steel/runs_unified_20260803/neu_yolo11s_s42
+---
+> save_dir: /home/DSJ44/paper2_yolov11_steel/round17_yolo11m_20261005/neu_yolo11m_s42

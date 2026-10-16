@@ -1,0 +1,16 @@
+# diff /home/DSJ44/paper2_yolov11_steel/runs_unified_20260803/neu_yolo11s_s1/args.yaml /home/DSJ44/paper2_yolov11_steel/round20_yolov8_20261008/neu_yolov8s_s1/args.yaml
+# exit_code=1
+3c3
+< model: /home/DSJ44/paper2_yolov11_steel/yolo11s.pt
+---
+> model: /home/DSJ44/paper2_yolov11_steel/round20_yolov8_20261008/yolov8s.pt
+15,16c15,16
+< project: /home/DSJ44/paper2_yolov11_steel/runs_unified_20260803
+< name: neu_yolo11s_s1
+---
+> project: /home/DSJ44/paper2_yolov11_steel/round20_yolov8_20261008
+> name: neu_yolov8s_s1
+106c106
+< save_dir: /home/DSJ44/paper2_yolov11_steel/runs_unified_20260803/neu_yolo11s_s1
+---
+> save_dir: /home/DSJ44/paper2_yolov11_steel/round20_yolov8_20261008/neu_yolov8s_s1

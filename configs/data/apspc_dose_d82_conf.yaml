@@ -1,0 +1,7 @@
+path: /home/DSJ44/paper2_yolov11_steel/exp_apspc_dose_20260817/data
+train: train_leak/images
+test: ''
+nc: 10
+names: {0: aoxian, 1: budaodian, 2: cahua, 3: jupi, 4: loudi, 5: pengshang, 6: qikeng,
+  7: tucengkailie, 8: tufen, 9: zangdian}
+val: val_d82_conf/images

@@ -1,0 +1,136 @@
+第十六轮 APSPC 剂量实验统一协议重跑 — 本轮所跑命令完整列表
+目录: exp_apspc_dose_unified_20260915/
+
+--- 准备 + START ---
+cd /home/DSJ44/paper2_yolov11_steel
+mkdir -p exp_apspc_dose_unified_20260915/{scripts,configs,runs,logs}
+date '+%Y-%m-%d %H:%M:%S' > exp_apspc_dose_unified_20260915/.start_ts
+
+--- 0.1 模板取值 ---
+grep -nE '^(optimizer|degrees|flipud|mixup|conf|warmup_epochs|save_period|lr0|lrf|momentum|weight_decay|close_mosaic|mosaic|scale|translate|fliplr|hsv_h|hsv_s|hsv_v|erasing|box|cls|dfl):' \
+  runs_unified_20260803/apspc_yolo11n_s0/args.yaml
+  => optimizer=SGD degrees=10.0 flipud=0.5 mixup=0.1 conf=0.001 warmup_epochs=3 save_period=20
+     lr0=0.01 lrf=0.01 momentum=0.937 weight_decay=0.0005 close_mosaic=10 mosaic=1.0
+     scale=0.5 translate=0.1 fliplr=0.5 hsv_h=0.015 hsv_s=0.7 hsv_v=0.4 erasing=0.4
+     box=7.5 cls=0.5 dfl=1.5
+  => 与任务书所给 NEU 表逐项一致,无差异项
+
+--- 受保护目录只读性核查 (自加,非任务书要求) ---
+find exp_apspc_dose_20260817 -type f -printf '%T+ %s %p\n' | sort > /tmp/aug_before.txt      # 9503 个文件
+find exp_apspc_dose_20260817 -name "*.cache" -exec sha256sum {} \; | sort -k2 > /tmp/aug_cache_before.txt  # 10 个 cache
+# 探针: 用八月 leaktrain_s0 best.pt 在 apspc_d0.yaml 上 val() 一次
+python - <<'PY' ... YOLO(best.pt).val(data=apspc_d0.yaml, project=<新目录>/cachetest, name=probe_val_d0)
+  => 日志显示 "Scanning .../val_d0/labels.cache... 342 images" (命中缓存,非 "New cache created")
+  => map50=0.548119 map5095=0.323863
+PY
+find exp_apspc_dose_20260817 -type f -printf '%T+ %s %p\n' | sort > /tmp/aug_after.txt
+diff /tmp/aug_before.txt /tmp/aug_after.txt          # 无差异 => 9503 文件 mtime+size 一致
+find ... -name "*.cache" -exec sha256sum ... > /tmp/aug_cache_after.txt
+diff /tmp/aug_cache_before.txt /tmp/aug_cache_after.txt   # 无差异 => 10 个 cache sha256 一致
+rm -rf exp_apspc_dose_unified_20260915/cachetest
+# 依据: ultralytics 8.3.40 data/dataset.py:138-142 以 cache['hash']==get_hash(label_files+im_files)
+#       校验; get_hash 仅对文件大小与路径取 sha256。断言失败会 unlink 并重写 cache(即写入受保护目录)。
+#       实证表明现有 cache 命中,故可直接复用八月 data 与 9 个 yaml。
+
+--- 1 前置检查 ---
+ls exp_apspc_dose_20260817/data/train_leak/images | wc -l      # 1280
+ls exp_apspc_dose_20260817/data/train_leak/labels | wc -l      # 1280
+for d in exp_apspc_dose_20260817/data/val_d*/; do echo -n "$d "; ls "$d/images" | wc -l; done
+                                                               # 342/362/362/370/370/383/383/424/424
+ls datasets/apspc_clean1711_seed0/images/train | wc -l         # 1198
+ls datasets/apspc_clean1711_seed0/images/val   | wc -l         # 342
+cd exp_apspc_dose_20260817/data/val_d0/images && ls | sort > /tmp/vd0.txt; cd -
+cd datasets/apspc_clean1711_seed0/images/val   && ls | sort > /tmp/vclean.txt; cd -
+diff /tmp/vd0.txt /tmp/vclean.txt; echo "filename_diff_exit=$?"      # 0
+cd exp_apspc_dose_20260817/data/val_d0/images && sha256sum * | sort -k2 | awk '{print $1}' > /tmp/h0.txt; cd -
+cd datasets/apspc_clean1711_seed0/images/val   && sha256sum * | sort -k2 | awk '{print $1}' > /tmp/hc.txt; cd -
+diff /tmp/h0.txt /tmp/hc.txt; echo "sha_diff_exit=$?"                # 0
+grep -rn "frozen" exp_apspc_dose_20260817/configs/ || echo "no frozen ref"
+grep -n "^test:" exp_apspc_dose_20260817/configs/apspc_d0.yaml       # test: ''
+cat /home/DSJ44/.config/Ultralytics/settings.json
+nvidia-smi --query-gpu=memory.used --format=csv                      # 0 MiB
+  => 全部写入 preflight.txt
+
+--- 2 + 3 六次训练 (A 臂在前, B 臂在后, 串行) ---
+nohup /home/DSJ44/miniconda3/envs/yolov11/bin/python \
+    exp_apspc_dose_unified_20260915/scripts/run_all.py \
+    > exp_apspc_dose_unified_20260915/_driver_stdout.log 2>&1 &
+  run_all.py 对 common.ARM_RUNS 六个条目依次调用 train_one.py:
+    A 臂: data=exp_apspc_dose_20260817/configs/apspc_d0.yaml
+          name=apspc_yolo11n_leaktrain_unified_s{0,1,42}
+    B 臂: data=configs/apspc/apspc_clean1711_seed0_dev.yaml
+          name=apspc_yolo11n_clean_repro_s{0,1,42}
+  公共参数 (逐项照抄模板, 共 30 项, 见 scripts/common.py TRAIN_KWARGS):
+    imgsz=640 epochs=200 batch=16 patience=50 resume=False exist_ok=False device=0
+    optimizer='SGD' degrees=10.0 flipud=0.5 mixup=0.1 conf=0.001 warmup_epochs=3
+    save_period=20 lr0=0.01 lrf=0.01 momentum=0.937 weight_decay=0.0005
+    close_mosaic=10 mosaic=1.0 scale=0.5 translate=0.1 fliplr=0.5
+    hsv_h=0.015 hsv_s=0.7 hsv_v=0.4 erasing=0.4 box=7.5 cls=0.5 dfl=1.5
+    project=exp_apspc_dose_unified_20260915/runs  seed=<seed>
+  每次训练后立即执行验收 diff (仅允许 data/project/name/seed/save_dir 五行差异),
+  出现第六行则立即停止
+  => args_diff.txt, line_train_terminal.txt, optimizer_resolved.txt, logs/*.log
+
+--- 4 + 5 评估与交付 ---
+/home/DSJ44/miniconda3/envs/yolov11/bin/python \
+    exp_apspc_dose_unified_20260915/scripts/eval_dose.py \
+    > exp_apspc_dose_unified_20260915/line_eval_terminal.txt 2>&1
+  A 臂: 每个 best.pt 在 9 个 val 上重新评估 => 27 次 => dose_results_unified.csv
+  B 臂: 每个 best.pt 在自身 val 与 val_d0 上评估 => 6 次 => clean_repro_results.csv
+  另出 runs_meta.csv
+  口径: 一律 best.pt 重新 .val() 的 r.box.map50 / r.box.map;
+        不使用训练日志末行值,不使用日志最优行值
+
+--- 6 影响范围核验 ---
+START=$(cat exp_apspc_dose_unified_20260915/.start_ts)
+find . -newermt "$START" -type f -not -path './exp_apspc_dose_unified_20260915/*' -not -path './.git/*'
+find /home/DSJ44/.config/Ultralytics -newermt "$START" -type f
+find /home/DSJ44/.config/Ultralytics -type f -printf '%T+ %p\n' | sort
+
+--- exp_env.txt ---
+/home/DSJ44/miniconda3/envs/yolov11/bin/python \
+    exp_apspc_dose_unified_20260915/scripts/env_record.py
+
+--- 交付确认 ---
+ls -la exp_apspc_dose_unified_20260915/
+
+--- 约束遵守 ---
+不修改、不覆盖、不删除 exp_apspc_dose_20260817/ 下任何文件 (9503 个文件 mtime+size 训练前后一致,
+  10 个 labels.cache 的 sha256 一致);
+不修改 runs_unified_20260803/ 下任何文件;
+训练不使用 resume;不触碰冻结测试集 (apspc_d0.yaml 的 test 为空)。
+
+--- 本轮实际执行结果与异常披露 (补充记录) ---
+
+[训练] driver 16:32:09 启动, 20:01:06 结束, total_elapsed_sec=12537.8 (3.48 h)
+job 1/6 apspc_yolo11n_leaktrain_unified_s0  16:32:09→17:08:15 wall=2166.3s epochs=200 GATE=PASS 违规=0
+job 2/6 apspc_yolo11n_leaktrain_unified_s1  17:08:15→17:44:17 wall=2161.9s epochs=200 GATE=PASS 违规=0
+job 3/6 apspc_yolo11n_leaktrain_unified_s42 17:44:17→18:20:04 wall=2146.6s epochs=200 GATE=PASS 违规=0
+job 4/6 apspc_yolo11n_clean_repro_s0        18:20:04→18:53:30 wall=2005.9s epochs=200 GATE=PASS 违规=0
+job 5/6 apspc_yolo11n_clean_repro_s1        18:53:30→19:27:43 wall=2053.1s epochs=200 GATE=PASS 违规=0
+job 6/6 apspc_yolo11n_clean_repro_s42       19:27:43→20:01:06 wall=2003.5s epochs=200 GATE=PASS 违规=0
+六次 optimizer 实际解析行均为: optimizer: SGD(lr=0.01, momentum=0.937) with parameter groups
+  81 weight(decay=0.0), 88 weight(decay=0.0005), 87 bias(decay=0.0)
+六次均无早停, 全部跑满 200 轮。
+
+[异常 1] 评估脚本 yaml 命名规则写错, 首次运行 FileNotFoundError 退出:
+  原写法 VAL_YAML = "apspc_%s.yaml" % val_set  => 找 apspc_val_d0.yaml (不存在)
+  实际文件名为 "apspc_" + val_set 去掉 "val_" 前缀: apspc_d0.yaml / apspc_d20_same.yaml / ...
+  该次失败发生在第一次 val() 之前, 未产生任何部分 CSV; 修正 common.py 的 VAL_YAML 后重跑。
+  此异常不影响训练, 也不影响受保护目录 (失败后复核 AUG_DIR_UNCHANGED)。
+
+[异常 2] 评估首次重跑在前台超过工具 600s 上限被 SIGTERM 中断, 已完成 14/33 次评估,
+  未写任何 CSV。改为后台作业重跑, 完整跑完 33 次。
+  另: 中断后为清理残留进程执行的 pkill -f eval_dose.py 误匹配了执行该命令的 shell 自身
+  (命令行文本包含 "eval_dose.py"), 导致该条 bash 被 SIGTERM 结束; 无其他影响。
+
+[异常 3] 评估全部完成、三份 CSV 均已落盘、并已打印 "T16 eval end=2026-09-15 20:24:31" 之后,
+  进程在解释器退出阶段以 exit code 134 (SIGABRT) 终止, stderr 为
+  "terminate called without an active exception"。
+  属 PyTorch/CUDA 退出期析构崩溃, 发生在全部计算与写盘之后。
+  完整性核验: line_eval_terminal.txt 中 "map50=" 计数 = 33/33;
+  dose_results_unified.csv = 27 数据行; clean_repro_results.csv = 6 数据行; runs_meta.csv = 6 数据行。
+  CSV 内容完整, 未截断。
+
+[口径说明] runs_meta.csv 的 train_seconds 取 results.csv 末行 time 列 (ultralytics 自记累计秒数),
+  非 driver 的 wall clock (wall clock 见上, 二者差约 15-30s 的模型加载/数据扫描开销)。

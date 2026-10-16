@@ -1,0 +1,37 @@
+=== T4: verify_20260805/verify_18rows.csv (18 次训练超参一致性核对表) ===
+
+### ls -la verify_20260805/
+总用量 696
+drwxr-xr-x  3 DSJ44 user   4096 8月   5 14:21 .
+drwxr-xr-x 34 DSJ44 user   4096 9月  14 15:59 ..
+-rw-r--r--  1 DSJ44 user 670578 8月   5 14:21 all_image_hashes.csv
+drwxr-xr-x  2 DSJ44 user   4096 8月   5 14:21 conflict_pairs
+-rw-r--r--  1 DSJ44 user    239 8月   5 14:21 cross_split_dups.csv
+-rw-r--r--  1 DSJ44 user    218 8月   5 14:21 dup_groups.csv
+-rw-r--r--  1 DSJ44 user   3423 8月   5 14:21 verify_18rows.csv
+-rw-r--r--  1 DSJ44 user    474 8月   5 14:21 verify_env.txt
+-rw-r--r--  1 DSJ44 user  11010 8月   5 14:21 verify.py
+
+### cat verify_20260805/verify_18rows.csv
+run_name,model,data,imgsz,epochs,batch,patience,seed,resume,exist_ok,device,epochs_actual,mAP50,mAP50-95
+apspc_yolo11n_s0,/home/DSJ44/paper2_yolov11_steel/yolo11n.pt,/home/DSJ44/paper2_yolov11_steel/configs/apspc/apspc_clean1711_seed0_dev.yaml,640,200,16,50,0,False,False,0,200,0.49095,0.29751
+apspc_yolo11n_s1,/home/DSJ44/paper2_yolov11_steel/yolo11n.pt,/home/DSJ44/paper2_yolov11_steel/configs/apspc/apspc_clean1711_seed0_dev.yaml,640,200,16,50,1,False,False,0,200,0.50066,0.29335
+apspc_yolo11n_s42,/home/DSJ44/paper2_yolov11_steel/yolo11n.pt,/home/DSJ44/paper2_yolov11_steel/configs/apspc/apspc_clean1711_seed0_dev.yaml,640,200,16,50,42,False,False,0,200,0.50641,0.29546
+apspc_yolo11s_s0,/home/DSJ44/paper2_yolov11_steel/yolo11s.pt,/home/DSJ44/paper2_yolov11_steel/configs/apspc/apspc_clean1711_seed0_dev.yaml,640,200,16,50,0,False,False,0,200,0.52083,0.29405
+apspc_yolo11s_s1,/home/DSJ44/paper2_yolov11_steel/yolo11s.pt,/home/DSJ44/paper2_yolov11_steel/configs/apspc/apspc_clean1711_seed0_dev.yaml,640,200,16,50,1,False,False,0,200,0.50577,0.29962
+apspc_yolo11s_s42,/home/DSJ44/paper2_yolov11_steel/yolo11s.pt,/home/DSJ44/paper2_yolov11_steel/configs/apspc/apspc_clean1711_seed0_dev.yaml,640,200,16,50,42,False,False,0,156,0.50504,0.29068
+gc10_yolo11n_s0,/home/DSJ44/paper2_yolov11_steel/yolo11n.pt,/home/DSJ44/paper2_yolov11_steel/configs/gc10/gc10_det.yaml,640,200,16,50,0,False,False,0,200,0.6531,0.33675
+gc10_yolo11n_s1,/home/DSJ44/paper2_yolov11_steel/yolo11n.pt,/home/DSJ44/paper2_yolov11_steel/configs/gc10/gc10_det.yaml,640,200,16,50,1,False,False,0,185,0.65975,0.33438
+gc10_yolo11n_s42,/home/DSJ44/paper2_yolov11_steel/yolo11n.pt,/home/DSJ44/paper2_yolov11_steel/configs/gc10/gc10_det.yaml,640,200,16,50,42,False,False,0,200,0.67712,0.34018
+gc10_yolo11s_s0,/home/DSJ44/paper2_yolov11_steel/yolo11s.pt,/home/DSJ44/paper2_yolov11_steel/configs/gc10/gc10_det.yaml,640,200,16,50,0,False,False,0,200,0.66475,0.34632
+gc10_yolo11s_s1,/home/DSJ44/paper2_yolov11_steel/yolo11s.pt,/home/DSJ44/paper2_yolov11_steel/configs/gc10/gc10_det.yaml,640,200,16,50,1,False,False,0,200,0.64691,0.34562
+gc10_yolo11s_s42,/home/DSJ44/paper2_yolov11_steel/yolo11s.pt,/home/DSJ44/paper2_yolov11_steel/configs/gc10/gc10_det.yaml,640,200,16,50,42,False,False,0,200,0.65322,0.33959
+neu_yolo11n_s0,/home/DSJ44/paper2_yolov11_steel/yolo11n.pt,/home/DSJ44/paper2_yolov11_steel/audits/leakage_sensitivity/neu_det_val359.yaml,640,200,16,50,0,False,False,0,200,0.75423,0.42677
+neu_yolo11n_s1,/home/DSJ44/paper2_yolov11_steel/yolo11n.pt,/home/DSJ44/paper2_yolov11_steel/audits/leakage_sensitivity/neu_det_val359.yaml,640,200,16,50,1,False,False,0,200,0.76763,0.43696
+neu_yolo11n_s42,/home/DSJ44/paper2_yolov11_steel/yolo11n.pt,/home/DSJ44/paper2_yolov11_steel/audits/leakage_sensitivity/neu_det_val359.yaml,640,200,16,50,42,False,False,0,200,0.76014,0.43763
+neu_yolo11s_s0,/home/DSJ44/paper2_yolov11_steel/yolo11s.pt,/home/DSJ44/paper2_yolov11_steel/audits/leakage_sensitivity/neu_det_val359.yaml,640,200,16,50,0,False,False,0,200,0.76048,0.43029
+neu_yolo11s_s1,/home/DSJ44/paper2_yolov11_steel/yolo11s.pt,/home/DSJ44/paper2_yolov11_steel/audits/leakage_sensitivity/neu_det_val359.yaml,640,200,16,50,1,False,False,0,200,0.76887,0.43982
+neu_yolo11s_s42,/home/DSJ44/paper2_yolov11_steel/yolo11s.pt,/home/DSJ44/paper2_yolov11_steel/audits/leakage_sensitivity/neu_det_val359.yaml,640,200,16,50,42,False,False,0,200,0.74955,0.42275
+
+### wc -l verify_20260805/verify_18rows.csv
+19 verify_20260805/verify_18rows.csv

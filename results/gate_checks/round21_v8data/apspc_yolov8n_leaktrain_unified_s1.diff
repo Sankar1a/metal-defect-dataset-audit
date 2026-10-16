@@ -1,0 +1,16 @@
+# diff /home/DSJ44/paper2_yolov11_steel/exp_apspc_dose_unified_20260915/runs/apspc_yolo11n_leaktrain_unified_s1/args.yaml /home/DSJ44/paper2_yolov11_steel/round21_v8data_20261009/apspc_yolov8n_leaktrain_unified_s1/args.yaml
+# exit_code=1
+3c3
+< model: /home/DSJ44/paper2_yolov11_steel/yolo11n.pt
+---
+> model: /home/DSJ44/paper2_yolov11_steel/round21_v8data_20261009/yolov8n.pt
+15,16c15,16
+< project: /home/DSJ44/paper2_yolov11_steel/exp_apspc_dose_unified_20260915/runs
+< name: apspc_yolo11n_leaktrain_unified_s1
+---
+> project: /home/DSJ44/paper2_yolov11_steel/round21_v8data_20261009
+> name: apspc_yolov8n_leaktrain_unified_s1
+106c106
+< save_dir: /home/DSJ44/paper2_yolov11_steel/exp_apspc_dose_unified_20260915/runs/apspc_yolo11n_leaktrain_unified_s1
+---
+> save_dir: /home/DSJ44/paper2_yolov11_steel/round21_v8data_20261009/apspc_yolov8n_leaktrain_unified_s1
