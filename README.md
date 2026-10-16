@@ -1,8 +1,8 @@
 # metal-defect-dataset-audit
 
 Audit lists, configurations, logs and scripts for our study of three public metal-surface
-defect-detection datasets (NEU-DET, GC10-DET and APSPC). The manuscript is under
-submission to *Sensors* (MDPI); this repository will be cited from its Data Availability Statement.
+defect-detection datasets (NEU-DET, GC10-DET and APSPC). The accompanying manuscript is under
+peer review; this repository is cited from its Data Availability Statement.
 
 The study asks how much a reported mAP gain can be moved by data-handling decisions,
 compared with changing the model size and with run-to-run seed variation.
