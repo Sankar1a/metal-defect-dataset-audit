@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+out/
+test_out*/
+.cache/
+*.sqlite

@@ -1,0 +1,22 @@
+# GC10-DET as released: class folders 1..10, VOC XML in 'lable' (sic).
+# Reference values (accompanying manuscript): 81 folder-XML disagreements among 2306 folder entries with
+# XML; 12 stems in two folders.
+name: GC10-DET (raw)
+root: /path/to/gc10_raw          # placeholder: pass the real root as the positional argument
+images: ["*/*.jpg"]
+split: none
+primary: xml
+class_names: [1_chongkong, 2_hanfeng, 3_yueyawan, 4_shuiban, 5_youban, 6_siban, 7_yiwu, 8_yahen, 9_zhehen, 10_yaozhe]
+class_aliases: {10_yaozhed: 10_yaozhe}   # variant spelling in some XML files (reported as alias_class)
+sources:
+  - name: xml
+    type: voc
+    dirs: [lable]
+    folder_tag_source: xml_folder          # the <folder> element inside each XML ('all' in 88 files: unmapped)
+    folder_tag_map: {"1": 1_chongkong, "2": 2_hanfeng, "3": 3_yueyawan, "4": 4_shuiban, "5": 5_youban,
+                     "6": 6_siban, "7": 7_yiwu, "8": 8_yahen, "9": 9_zhehen, "10": 10_yaozhe}
+  - name: folder
+    type: folder_class
+    level: -1
+    map: {"1": 1_chongkong, "2": 2_hanfeng, "3": 3_yueyawan, "4": 4_shuiban, "5": 5_youban,
+          "6": 6_siban, "7": 7_yiwu, "8": 8_yahen, "9": 9_zhehen, "10": 10_yaozhe}

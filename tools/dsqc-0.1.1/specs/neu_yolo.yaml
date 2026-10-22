@@ -1,0 +1,10 @@
+# NEU-DET as used in the accompanying manuscript (YOLO conversion, 1440 train / 360 val).
+# Reference values (accompanying manuscript): one pixel-identical pair, train/patches_101 and val/patches_105.
+name: NEU-DET (manuscript split)
+root: /path/to/NEU-DET          # placeholder: pass the real root as the positional argument
+images: ["images/*"]
+split: {type: component, index: 1}
+primary: yolo
+class_names: [crazing, inclusion, patches, pitted_surface, rolled-in_scale, scratches]
+sources:
+  - {name: yolo, type: yolo, labels_dir: labels, images_dir: images}

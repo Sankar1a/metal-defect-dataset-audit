@@ -1,0 +1,18 @@
+# APSPC (Tianchi dataset 148297, listed as APDDD), extracted from APSPC1.zip, APSPC2.zip, APSPC-Annotations.zip.
+# Reference values (accompanying manuscript): 82 pixel-identical groups, 174 files (9.23% of 1885);
+# types A30 B5 C1 11 C2 27 C3 9.
+name: APSPC (raw)
+root: /path/to/APSPC          # placeholder: pass the real root as the positional argument
+images: ["extracted/part1/APSPC1/*.jpg", "extracted/part2/APSPC2/*.jpg"]
+split: none
+primary: xml
+class_names: [aoxian, budaodian, cahua, jupi, loudi, pengshang, qikeng, tucengkailie, tufen, zangdian]
+sources:
+  - name: xml
+    type: voc
+    dirs: [extracted/annotations/APSPC-Annotations/Annotations]
+    folder_tag_source: xml_folder       # <folder> holds a Chinese class name (or 无类别提示, "no class hint")
+    # Chinese name -> the pinyin class name used in the boxes (same word; checked against the cross-tab of
+    # an earlier run). 无类别提示 is not a class: left unmapped, so those images are not compared.
+    folder_tag_map: {不导电: budaodian, 擦花: cahua, 凹陷: aoxian, 桔皮: jupi, 漏底: loudi, 碰伤: pengshang,
+                     凸粉: tufen, 涂层开裂: tucengkailie, 脏点: zangdian}

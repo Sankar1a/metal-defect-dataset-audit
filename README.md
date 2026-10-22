@@ -90,6 +90,16 @@ Bitwise reproducibility was checked only on the machine, driver and software ver
 - The GC10-DET folder–XML check was first run interactively; `gc10_lists_from_consistency.py`
   re-derives both lists from the saved per-image table.
 
+## Dataset quality-check tool (dsqc)
+
+`tools/dsqc-0.1.1/` contains dsqc, a quality-check tool for object-detection datasets in YOLO,
+VOC or COCO format that implements the audit procedure of the accompanying manuscript
+(pixel-hash duplicate search, annotation comparison within duplicate groups, label-source
+consistency, and file manifests). `tools/dsqc-0.1.1/verify/` re-runs the tool on the three
+datasets and compares its output with the audit lists in `audit/`; the expected result is
+`13 items checked, total differing rows = 0`. See `tools/dsqc-0.1.1/README.md` and
+`tools/dsqc-0.1.1/verify/README.md`.
+
 ## License
 
 Code: MIT License (see `LICENSE`). Lists, tables and logs: CC BY 4.0. The datasets themselves
