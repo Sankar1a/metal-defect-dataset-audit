@@ -19,6 +19,7 @@ Spec YAML (all paths relative to `root`; see specs/*.yaml for real examples):
 """
 import json
 import os
+import re
 
 from ..model import Dataset, ImageRecord
 from .coco import attach_coco
@@ -52,32 +53,100 @@ def _apply_split(ds, split):
             im.split = parts[idx] if len(parts) - 1 > idx else None
         ds.split_mode = f"component[{idx}]"
     elif t == "lists":
-        by_rel = ds.by_rel()
-        by_base = {}
-        for im in ds.images:
-            by_base.setdefault(os.path.basename(im.rel), []).append(im)
+        by_suffix, by_suffix_noext = _suffix_index(ds.images)
         for name, lst in split["lists"].items():
             p = lst if os.path.isabs(lst) else os.path.join(ds.root, lst)
-            with open(p, encoding="utf-8") as f:
+            st = {"list": posix(lst), "entries": 0, "matched": 0, "not_found": 0, "ambiguous": 0}
+            missing, ambiguous = [], []
+            with open(p, encoding="utf-8-sig") as f:
                 for line in f:
-                    s = posix(line.strip())
-                    if not s:
+                    s = _list_entry(line)
+                    if s is None:
                         continue
-                    hit = [im for r, im in by_rel.items() if s.endswith("/" + r) or s == r]
+                    st["entries"] += 1
+                    hit, n_cands = _match_entry(s, by_suffix, by_suffix_noext)
                     if not hit:
-                        cands = by_base.get(os.path.basename(s), [])
-                        hit = cands if len(cands) == 1 else []
-                        if len(cands) > 1:
-                            ds.notes.append(f"split list {name}: '{s}' matches {len(cands)} images; skipped")
-                    if not hit:
-                        ds.notes.append(f"split list {name}: '{s}' not found")
+                        if n_cands > 1:
+                            st["ambiguous"] += 1
+                            ambiguous.append(f"'{s}' ({n_cands} images)")
+                        else:
+                            st["not_found"] += 1
+                            missing.append(f"'{s}'")
+                        continue
+                    st["matched"] += 1
                     for im in hit:
                         if im.split not in (None, name):
                             ds.notes.append(f"{im.rel} listed in both {im.split} and {name}")
                         im.split = name
+            for what, items in (("not found", missing), ("match several images and were skipped", ambiguous)):
+                if items:
+                    more = f" … (+{len(items) - 5})" if len(items) > 5 else ""
+                    ds.notes.append(f"split list {name}: {len(items)} entries {what}: {', '.join(items[:5])}{more}")
+            ds.split_lists[name] = st
         ds.split_mode = "lists"
     else:
         raise ValueError(f"unknown split type {t}")
+
+
+# ---- split lists -------------------------------------------------------------------------------
+# A list line may name an image by its path relative to the dataset root, by a longer path that ends
+# with it (absolute path, other root), by its file name, or - as in Pascal VOC ImageSets and many other
+# releases - by its file name without extension ("stem"). Matching uses the longest trailing part of
+# the entry that names at least one image; a name that fits several images is skipped and reported.
+
+_VOC_FLAG = re.compile(r"(\S+)\s+-?\d+")      # VOC per-class lists: "<stem>  1" / "<stem> -1"
+
+
+def _list_entry(line):
+    s = line.strip()
+    if not s or s.startswith("#"):
+        return None
+    s = s.replace("\\", "/")
+    m = _VOC_FLAG.fullmatch(s)
+    if m:
+        s = m.group(1)
+    while s.startswith("./"):
+        s = s[2:]
+    return s.rstrip("/") or None
+
+
+def _suffix_index(images):
+    """Every trailing part of every image path ('a/b/x.jpg', 'b/x.jpg', 'x.jpg'), with and without
+    the extension, mapped to the images that end with it."""
+    by_suffix, by_suffix_noext = {}, {}
+    for im in images:
+        parts = im.rel.split("/")
+        noext = parts[:-1] + [os.path.splitext(parts[-1])[0]]
+        for k in range(len(parts)):
+            by_suffix.setdefault("/".join(parts[k:]), []).append(im)
+            by_suffix_noext.setdefault("/".join(noext[k:]), []).append(im)
+    return by_suffix, by_suffix_noext
+
+
+def _match_entry(s, by_suffix, by_suffix_noext):
+    """Returns (images, number of candidates at the longest matching suffix)."""
+    def longest(key_parts, index, exact_key):
+        for k in range(len(key_parts)):
+            key = "/".join(key_parts[k:])
+            cands = index.get(key)
+            if not cands:
+                continue
+            exact = [im for im in cands if exact_key(im) == key]
+            if exact:
+                return exact, len(cands)
+            return (cands if len(cands) == 1 else []), len(cands)
+        return [], 0
+
+    parts = [x for x in s.split("/") if x]
+    if s.lower().endswith(IMG_EXTS):
+        return longest(parts, by_suffix, lambda im: im.rel)
+    noext_rel = lambda im: os.path.splitext(im.rel)[0]   # noqa: E731
+    hit, n = longest(parts, by_suffix_noext, noext_rel)   # a stem, possibly with dots in it
+    if not hit and n == 0:
+        base, ext = os.path.splitext(parts[-1])
+        if ext.lower() in (".xml", ".txt", ".json"):       # a list of annotation files: compare stems
+            hit, n = longest(parts[:-1] + [base], by_suffix_noext, noext_rel)
+    return hit, n
 
 
 def load_spec(spec_path, root_override=None):

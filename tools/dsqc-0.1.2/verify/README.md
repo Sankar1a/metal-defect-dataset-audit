@@ -59,10 +59,10 @@ both whose value differs) — plus their sum in `diff_rows`.
 
 ## Usage
 
-The tool is meant to live inside the manuscript repository, at `tools/dsqc-0.1.1/`:
+The tool is meant to live inside the manuscript repository, at `tools/dsqc-<version>/` (for example `tools/dsqc-0.1.2/`):
 
 ```bash
-cd tools/dsqc-0.1.1/verify
+cd tools/dsqc-0.1.2/verify
 ./verify_all.sh --repo ../../.. \
                 --apspc /path/to/APSPC \
                 --gc10  /path/to/gc10_raw \

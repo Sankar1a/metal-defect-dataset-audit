@@ -1,4 +1,4 @@
-# dsqc 0.1.1 — dataset quality check for object-detection datasets
+# dsqc 0.1.2 — dataset quality check for object-detection datasets
 
 dsqc reads an object-detection dataset (images + labels) and writes a report about the
 inconsistencies it can detect with deterministic rules. It never trains or evaluates a model, never
@@ -6,6 +6,11 @@ writes inside the dataset, and uses CPU only.
 
 The output is meant to be read by a person: a `report.html` for browsing, plus CSV/JSON files that
 can be diffed between two dataset versions.
+
+What changed since 0.1.1 is listed in `CHANGELOG.md`: split lists that give file names without
+extension are now read, and check `c02` describes in pixels how far apart the boxes of a duplicate
+group are, flagging small boxes whose low IoU is only a few pixels of offset. Every statistic that
+0.1.1 reports is unchanged.
 
 ## Install
 
@@ -67,6 +72,15 @@ sources:
   - {name: folder, type: folder_class, level: -1, map: {"1": hole, "2": spot}}
 ```
 
+**Split lists** (`split: {type: lists, ...}`) are text files with one image per line. A line may give
+the path relative to the dataset root, a longer path that ends with it (an absolute path written on
+another machine, with `/` or `\`), the file name, or the file name without extension, as in Pascal
+VOC `ImageSets/Main/*.txt` (VOC per-class lists with a trailing `1`/`-1` also work; blank lines and
+lines starting with `#` are skipped; a UTF-8 byte-order mark is ignored). The longest trailing part
+of a line that names an image is used; a line that fits several images is skipped. How many lines
+of each list matched is reported by `c07` (`split_list.<split>.entries / matched / not_found /
+ambiguous`), with a `split_list_entries_unmatched` finding when some did not.
+
 `type: voc` also accepts `folder_tag_source: xml_folder` (read the `<folder>` element as an
 image-level class), `folder_tag_map` (map its raw values to class names), and
 `folder_tag_findings: false` (cross-tab only — use it when no class mapping is known). The same holds
@@ -83,11 +97,11 @@ Seven checks run on every scan. `--skip c04a_transform_dup,c06_box_sanity` skips
 |---|---|---|---|
 | `c00_inventory` | counts at every level: image files, decode errors, distinct stems, stems in several files, distinct byte/pixel hashes, distinct after rotation+flip, images with/without labels, empty labels, orphan annotations, images per split | counting only, no threshold; each row states its own definition | `c00_inventory__inventory.csv` |
 | `c01_exact_dup` | images whose decoded RGB pixels are identical, even when the bytes differ | `pixel_sha256 = sha256(PIL Image.convert('RGB').tobytes())`; a group spanning several splits is reported as leakage (high); with no split, a group is reported as a risk (medium) | `c01_exact_dup__pixel_duplicate_groups.csv` |
-| `c02_dup_label_types` | how the annotations inside one duplicate group differ | `identical` (same multiset of boxes) · `A` class sets differ · `B` box count of a class differs · `C1/C2/C3` same classes and counts, minimum IoU after one-to-one matching (`c_iou_low = 0.5`, `c_iou_high = 0.9`) · `shared_file` (two copies share one annotation file) | `c02_dup_label_types__duplicate_group_types.csv` |
+| `c02_dup_label_types` | how the annotations inside one duplicate group differ | `identical` (same multiset of boxes) · `A` class sets differ · `B` box count of a class differs · `C1/C2/C3` same classes and counts, minimum IoU after one-to-one matching (`c_iou_low = 0.5`, `c_iou_high = 0.9`) · `shared_file` (two copies share one annotation file). For C-types the table also gives `max_coord_diff_px`, `max_center_offset_px`, `low_iou_max_area_px2` and `small_box_jitter`: `yes` when every matched pair with IoU < `c_iou_high` is two boxes smaller than `small_box_area_px2 = 1024` (32 × 32 px, the COCO limit for small objects) whose centres lie inside each other. The flag never changes the type; flagged C1/C2 groups get severity low (`jitter_downgrade = true`) | `c02_dup_label_types__duplicate_group_types.csv` |
 | `c03_source_consistency` | agreement between label sources of the same image: image-level class (folder, XML `<folder>`) vs box classes, and box source vs box source | an image-level class counts as present only if it occurs among the box classes (an empty annotation counts as not present); unmapped `<folder>` values are counted separately and not compared; box vs box uses the `c02` comparator; never decides which source is right | `c03_source_consistency__per_image_*.csv`, `…__by_class_*.csv`, `…__contingency_*.csv` |
 | `c04a_transform_dup` | images that become pixel-identical after a rotation (90/180/270) or a flip | `canon_sha256` = minimum hash over the 8 dihedral transforms; no threshold; groups already found by `c01` are not repeated | `c04a_transform_dup__rot_flip_groups.csv` |
 | `c06_box_sanity` | annotation files and boxes of every box source | `missing_annotation` (medium), `empty_annotation` (low), `unreadable_annotation` / `parse_issue` / `unknown_class` / `degenerate_box` (high), `size_mismatch` / `out_of_bounds` / `duplicate_box` (medium), `alias_class` (info), `tiny_box` (`tiny_min_side_px = 4.0` px, low), `full_image_box` (`full_image_ratio = 0.95`, low), `duplicate_box` (`dup_box_iou = 0.95`), `oob_tol_px = 0.0` | `c06_box_sanity__box_issues.csv`, `…__class_counts_*.csv` |
-| `c07_split_version` | split composition and a fingerprint of the whole dataset | per split and class: images containing the class, boxes, share of the split; `manifest.csv` with size and SHA-256 of every image and annotation file; `fingerprint_sha256` over the sorted `path<TAB>sha256` lines, so two byte-identical copies share one fingerprint | `manifest.csv`, `c07_split_version__split_class_counts.csv` |
+| `c07_split_version` | split composition and a fingerprint of the whole dataset | per split and class: images containing the class, boxes, share of the split; with split lists, how many lines of each list matched; `manifest.csv` with size and SHA-256 of every image and annotation file; `fingerprint_sha256` over the sorted `path<TAB>sha256` lines, so two byte-identical copies share one fingerprint | `manifest.csv`, `c07_split_version__split_class_counts.csv` |
 
 `max_rows_html` (default 200) only limits how many findings appear per check in `report.html`; every
 finding is always written to `findings.csv`.
@@ -144,3 +158,7 @@ field differs). Expected result: **13 items checked, 0 differing rows for every 
   reports nothing.
 - Checks are rule based: they point at inconsistencies and anomalies, they do not decide which label
   is correct.
+- The A/B/C1–C3 types follow fixed IoU thresholds, whatever the size of the object. For small boxes a
+  few pixels of offset already give C1 or C2; the `small_box_jitter` flag and the pixel distances in
+  the `c02` table point at such groups, but whether two boxes mark the same object is still for a
+  person to confirm on the images.

@@ -108,3 +108,47 @@ def make_coco(root):
                          {"id": 12, "image_id": 7, "category_id": 1, "bbox": [1, 1, 2, 2]}],
          "categories": [{"id": 1, "name": "dent"}]}
     _txt(f"{root}/annotations/instances.json", json.dumps(d))
+
+
+def make_voc_lists(root):
+    """VOC release style (JPEGImages/ + Annotations/ + ImageSets/Main/*.txt) whose split lists name
+    images in several ways, as real releases do (0.1.2)."""
+    J, A, M = os.path.join(root, "JPEGImages"), os.path.join(root, "Annotations"), os.path.join(root, "ImageSets", "Main")
+    for i in range(8):
+        _img(f"{J}/im{i}.jpg", 100 + i)
+        _xml(f"{A}/im{i}.xml", "JPEGImages", [("cell", 2, 2, 20, 20)], size=(64, 48))
+    _img(f"{J}/img.v2.jpg", 120)                         # a stem with a dot in it
+    _xml(f"{A}/img.v2.xml", "JPEGImages", [("cell", 2, 2, 20, 20)])
+    _img(f"{J}/twin.jpg", 121)                           # same stem in two directories -> ambiguous stem
+    _img(f"{root}/extra/twin.png", 122)
+    _xml(f"{A}/twin.xml", "JPEGImages", [("cell", 2, 2, 20, 20)])
+    _txt(f"{M}/train.txt", "\ufeffim0\nim1\n\n# a comment\nim2\nimg.v2\n")    # bare stems, BOM, blank, comment
+    _txt(f"{M}/val.txt", "im3  1\nim4 -1\n./JPEGImages/im5\n")                 # VOC per-class flags, ./ prefix
+    _txt(f"{M}/test.txt", "JPEGImages/im6.jpg\n"                                 # relative path
+                          "D:\\data\\release\\JPEGImages\\im7.jpg\n"       # Windows absolute path
+                          "Annotations/im0.xml\n"                                # annotation file name -> stem
+                          "twin\n"                                               # ambiguous
+                          "nothere\n")                                           # not in the dataset
+    return {"name": "voc-lists", "root": root, "images": ["**/*.jpg", "**/*.png", "*/*.jpg", "*/*.png"],
+            "split": {"type": "lists", "lists": {"train": "ImageSets/Main/train.txt",
+                                                  "val": "ImageSets/Main/val.txt",
+                                                  "test": "ImageSets/Main/test.txt"}},
+            "primary": "xml", "sources": [{"name": "xml", "type": "voc", "dirs": ["Annotations"]}]}
+
+
+def make_jitter(root):
+    """Pixel-identical pairs whose boxes differ only in position (0.1.2 small-box jitter flag).
+    Image 256 x 256. Returns {group file stem: expected (type, small_box_jitter)}."""
+    J, A = os.path.join(root, "JPEGImages"), os.path.join(root, "Annotations")
+    cases = {
+        "small": ([("d", 100, 100, 120, 120)], [("d", 106, 106, 126, 126)], ("C1", "yes")),  # IoU 0.32
+        "small_c2": ([("d", 50, 50, 80, 80)], [("d", 53, 50, 83, 80)], ("C2", "yes")),       # IoU 0.82, area 900
+        "large": ([("d", 10, 10, 210, 210)], [("d", 130, 10, 330, 210)], ("C1", "no")),     # IoU 0.25, large
+        "apart": ([("d", 100, 100, 120, 120)], [("d", 115, 100, 135, 120)], ("C1", "no")),  # centres outside
+    }
+    for k, (name, (ba, bb, _)) in enumerate(sorted(cases.items())):
+        _img(f"{J}/{name}_a.jpg", 200 + k, size=(256, 256), fmt="PNG")
+        _copy(f"{J}/{name}_a.jpg", f"{J}/{name}_b.jpg")
+        _xml(f"{A}/{name}_a.xml", "JPEGImages", ba, size=(256, 256))
+        _xml(f"{A}/{name}_b.xml", "JPEGImages", bb, size=(256, 256))
+    return {name: exp for name, (_, _, exp) in cases.items()}

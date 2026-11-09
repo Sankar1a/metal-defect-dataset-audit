@@ -13,6 +13,8 @@ DEFAULTS = {
     "dup_box_iou": 0.95,         # same-class boxes in one image overlapping at least this -> duplicate_box
     "oob_tol_px": 0.0,           # tolerance for out-of-bounds coordinates
     "max_rows_html": 200,        # findings shown per check in report.html
+    "small_box_area_px2": 1024.0,  # c02: boxes below this area (32 x 32 px, COCO 'small') can show jitter
+    "jitter_downgrade": True,    # c02: report C1/C2 groups flagged as small-box jitter with severity low
 }
 
 

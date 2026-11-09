@@ -80,6 +80,7 @@ class Dataset:
     orphans: Dict[str, List[str]] = field(default_factory=dict)          # source -> annotation files w/o image
     contingency_only: set = field(default_factory=set)   # class sources compared by cross-tab only
     split_mode: str = "none"
+    split_lists: Dict[str, dict] = field(default_factory=dict)  # split name -> entries / matched / not_found / ambiguous
     layout: str = ""
     notes: List[str] = field(default_factory=list)
 

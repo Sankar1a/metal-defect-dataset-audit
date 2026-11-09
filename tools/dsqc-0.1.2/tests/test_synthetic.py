@@ -147,5 +147,90 @@ class TestComparator(unittest.TestCase):
         self.assertEqual(group_type([a, a, [("y", (0, 0, 1, 1))]])[0], "A")
 
 
+class TestSplitLists(Base):
+    """0.1.2: split lists that name images by stem, file name, relative or foreign absolute path."""
+
+    def test_lists(self):
+        import yaml
+        root, out = os.path.join(self.tmp, "voc"), os.path.join(self.tmp, "out")
+        spec = ms.make_voc_lists(root)
+        sp = os.path.join(self.tmp, "spec.yaml")
+        with open(sp, "w", encoding="utf-8") as fh:
+            yaml.safe_dump(spec, fh, allow_unicode=True)
+        scan(["--spec", sp, "-o", out, "--no-transform"])
+        s, f = self.load(out)
+        inv = s["checks"]["c00_inventory"]["stats"]
+        self.assertEqual(inv["image_files"], 11)
+        # lists are read in key order (safe_dump sorts: test, train, val); im0 is named in test (as
+        # Annotations/im0.xml) and in train, the later list wins and a note records the conflict
+        self.assertEqual(inv["split.train"], 4)          # im0 im1 im2 img.v2
+        self.assertEqual(inv["split.val"], 3)            # im3 im4 im5
+        self.assertEqual(inv["split.test"], 2)           # im6 im7
+        self.assertEqual(inv["split.None"], 2)           # the two 'twin' images (ambiguous entry)
+        c7 = s["checks"]["c07_split_version"]["stats"]
+        self.assertEqual((c7["split_list.train.entries"], c7["split_list.train.matched"]), (4, 4))
+        self.assertEqual((c7["split_list.val.entries"], c7["split_list.val.matched"]), (3, 3))
+        self.assertEqual((c7["split_list.test.entries"], c7["split_list.test.matched"],
+                          c7["split_list.test.not_found"], c7["split_list.test.ambiguous"]), (5, 3, 1, 1))
+        codes = [x["code"] for x in f]
+        self.assertIn("split_list_entries_unmatched", codes)
+        notes = " ".join(s["checks"]["c00_inventory"]["notes"])
+        self.assertIn("JPEGImages/im0.jpg listed in both test and train", notes)
+        self.assertIn("'nothere'", notes)
+        self.assertIn("'twin' (2 images)", notes)
+
+
+class TestSmallBoxJitter(Base):
+    """0.1.2: geometry columns and the small-box jitter flag of check c02 (types unchanged)."""
+
+    def run_case(self, extra_cfg=None):
+        root, out = os.path.join(self.tmp, "jit"), os.path.join(self.tmp, "out")
+        expected = ms.make_jitter(root)
+        args = [root, "-o", out, "--no-transform"]
+        if extra_cfg:
+            import yaml
+            cp = os.path.join(self.tmp, "cfg.yaml")
+            with open(cp, "w", encoding="utf-8") as fh:
+                yaml.safe_dump(extra_cfg, fh)
+            args += ["--config", cp]
+        scan(args)
+        s, f = self.load(out)
+        rows = read_csv(os.path.join(out, "tables", "c02_dup_label_types__duplicate_group_types.csv"))
+        by = {r["files"].split("|")[0].split("/")[-1].rsplit("_", 1)[0]: r for r in rows}
+        sev = {x["images"].split("|")[0].split("/")[-1].rsplit("_", 1)[0]: x["severity"]
+               for x in f if x["check"] == "c02_dup_label_types"}
+        return expected, s, by, sev
+
+    def test_flag(self):
+        expected, s, by, sev = self.run_case()
+        for name, (t, j) in expected.items():
+            self.assertEqual((by[name]["type"], by[name]["small_box_jitter"]), (t, j), name)
+        self.assertEqual(by["small"]["max_coord_diff_px"], "6.0")
+        self.assertEqual(by["small"]["max_center_offset_px"], "8.5")
+        st = s["checks"]["c02_dup_label_types"]["stats"]
+        self.assertEqual((st["type_C1"], st["type_C2"]), (3, 1))
+        self.assertEqual((st["type_C1_small_box_jitter"], st["type_C2_small_box_jitter"]), (1, 1))
+        self.assertEqual((sev["small"], sev["large"], sev["apart"], sev["small_c2"]), ("low", "medium", "medium", "low"))
+
+    def test_no_downgrade(self):
+        _, _, _, sev = self.run_case({"jitter_downgrade": False})
+        self.assertEqual(sev["small"], "medium")
+
+
+class TestGeometry(unittest.TestCase):
+    def test_group_geometry(self):
+        from dsqc.geometry import group_geometry, group_type
+        a = [("x", (100, 100, 120, 120))]
+        b = [("x", (106, 106, 126, 126))]
+        self.assertEqual(group_type([a, b])[0], "C1")
+        g = group_geometry([a, b])
+        self.assertTrue(g["small_box_jitter"])
+        self.assertEqual(g["max_coord_diff_px"], 6)
+        self.assertIsNone(group_geometry([a, a + a]))      # counts differ -> not a C-type group
+        big = [("x", (0, 0, 100, 100))]
+        self.assertFalse(group_geometry([big, [("x", (10, 0, 110, 100))]])["small_box_jitter"])   # IoU 0.82, large box
+        self.assertIsNone(group_geometry([a, a])["low_iou_max_area_px2"])   # identical: no low-IoU pair
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -40,6 +40,16 @@ def run(ds, cfg, ctx):
     res.stats["fingerprint_sha256"] = h.hexdigest()
     res.stats["manifest_files"] = len(man)
 
+    # --- how the split lists were matched (0.1.2; only when split: {type: lists})
+    for sp, st in ds.split_lists.items():
+        for k in ("entries", "matched", "not_found", "ambiguous"):
+            res.stats[f"split_list.{sp}.{k}"] = st[k]
+        bad = st["not_found"] + st["ambiguous"]
+        if bad:
+            res.findings.append(Finding(NAME, "split_list_entries_unmatched", "medium", [],
+                                        f"split list '{sp}' ({st['list']}): {st['not_found']} of {st['entries']} entries "
+                                        f"not found, {st['ambiguous']} ambiguous (see notes)", dict(st, split=sp)))
+
     # --- split composition
     if ds.split_mode == "none" or not ds.primary:
         res.notes.append("no split defined" if ds.split_mode == "none" else "no box source")
